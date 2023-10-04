@@ -8,6 +8,7 @@ using LinearAlgebra
 include("loadSPP.jl")
 include("setSPP.jl")
 include("getfname.jl")
+include("heuristiqueDeConstruction.jl")
 
 # =========================================================================== #
 
@@ -17,6 +18,7 @@ fname = "Data/didactic.dat"
 C, A = loadSPP(fname)
 @show C
 @show A
+glouton(C,A)
 
 # Solving a SPP instance with GLPK
 println("\nSolving...")
@@ -33,8 +35,11 @@ print("x = "); println(value.(spp[:x]))
 # =========================================================================== #
 
 # Collecting the names of instances to solve
-println("\nCollecting...")
+#=println("\nCollecting...")
 target = "Data"
-fnames = getfname(target)
+fnames = getfname(target)=#
+
+
+
 
 println("\nThat's all folks !")
