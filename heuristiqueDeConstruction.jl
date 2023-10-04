@@ -4,58 +4,27 @@ function glouton(C, A)
 
     #m lignes et n colonnes
 
-    m, n = size(A) 
-
-    x::Vector{Int64}= zeros(Int, n)
-    fonctionUtilite::Vector{Float64} = zeros(Int, n)
-    tableauOccurence::Vector{Float64} = zeros(Int, n)
+    inutile, n = size(A) 
 
     (v1, v2, v3, v4, v5, v6, v7, v8, v9) = [view(A, :, i) for i in 1:size(A, 2)]
 
     V = [zeros(n) for _ in 1:n]
     V = (v1, v2, v3, v4, v5, v6, v7, v8, v9)
 
-    for i in 1:n
-        cmpt = Occ(V[i], m)
-        tableauOccurence[i] = C[i]/cmpt
-    end
-
-    fonctionUtilite = calculFonctionUtilité(tableauOccurence, n)
-
-    @show tableauOccurence
-    @show fonctionUtilite
-
-    println("\n")
-
-    @show A
-
-    APrime = zeros(Int, m, n)
-
-    #APrime = resolutionKnapsackProblem(A)
-
-    plusGrosCoef = fonctionUtilite[1]
-    @show plusGrosCoef
-
-    #recuperer l'indice du plus gros coef
-    trouve::Bool = false
-    i::Int64 = 0
-    coefDansLaFonctionObjective::Int64 = 0
-
-    while trouve != true
-
-        i = i+1
-        coefDansLaFonctionObjective = i
-
-        if tableauOccurence[i] == plusGrosCoef
-            trouve = true
-        end
-
-    end
-
-    @show coefDansLaFonctionObjective
-    #@show fonctionUtilite
+    coefDansLaFonctionObjective = update(A, C, V)
 
     supprimerLePlusGrosCoef(A, coefDansLaFonctionObjective)
+#= 
+    if (fonctionUtilite[1] == 0)
+        println(" Tous les éléments ont été mis dans le sac")
+    end
+    else if {
+        le sac est rempli sans avoir prit tous les éléments
+    } 
+    else {
+        #mettre à jour la matrice A sinon boucle infinie
+        glouton(C, A)
+    }=#
 
 end
 
@@ -70,7 +39,7 @@ function Occ(v, m, cmpt = 0)
     cmpt
 end
 
-# fonction qui retourne la fonction d'utilité en ordre decroissant
+# fonction qui retourne la fonction d'utilité en ordre décroissant
 
 function calculFonctionUtilité(tableauOccurence, n)
 
@@ -121,6 +90,55 @@ function merge!(A, p, q, r)
     end
 end
 
+# Fonction qui retourne le coef le plus gros de la fonction objective 
+
+function update(A, C, V)
+
+    m, n = size(A)
+
+    fonctionUtilite::Vector{Float64} = zeros(Int, n)
+    tableauOccurence::Vector{Float64} = zeros(Int, n)
+    cmpt::Int64 = 0
+
+
+    for i in 1:n
+        cmpt = Occ(V[i], m)
+        tableauOccurence[i] = C[i]/cmpt
+    end
+
+    fonctionUtilite = calculFonctionUtilité(tableauOccurence, n)
+
+    @show tableauOccurence
+    @show fonctionUtilite
+
+    println("\n")
+
+    plusGrosCoef = fonctionUtilite[1]
+    @show plusGrosCoef
+
+    #recuperer l'indice du plus gros coef
+    trouve::Bool = false
+    i::Int64 = 0
+    coefDansLaFonctionObjective::Int64 = 0
+
+    while trouve != true
+
+        i = i+1
+        coefDansLaFonctionObjective = i
+
+        if tableauOccurence[i] == plusGrosCoef
+            trouve = true
+        end
+
+    end
+
+    @show coefDansLaFonctionObjective
+    #@show fonctionUtilite
+
+    coefDansLaFonctionObjective
+    
+end
+
 
 function supprimerLePlusGrosCoef(A, coefDansLaFonctionObjective)
     #=@show A
@@ -138,10 +156,10 @@ function supprimerLePlusGrosCoef(A, coefDansLaFonctionObjective)
 
 
 
-    @show trouvé=#
+    @show trouvé
 
     for i in 1:n
         V[i][coefDansLaFonctionObjective]
-    end
+    end=#
 
 end
