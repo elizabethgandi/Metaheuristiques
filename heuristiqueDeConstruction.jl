@@ -20,24 +20,57 @@ function glouton(C, A)
         tableauOccurence[i] = C[i]/cmpt
     end
 
-    #@show tableauOccurence
-
     fonctionUtilite = calculFonctionUtilité(tableauOccurence, n)
 
+    @show tableauOccurence
     @show fonctionUtilite
+
+    println("\n")
+
+    @show A
+
+    APrime = zeros(Int, m, n)
+
+    #APrime = resolutionKnapsackProblem(A)
+
+    plusGrosCoef = fonctionUtilite[1]
+    @show plusGrosCoef
+
+    #recuperer l'indice du plus gros coef
+    trouve::Bool = false
+    i::Int64 = 0
+    coefDansLaFonctionObjective::Int64 = 0
+
+    while trouve != true
+
+        i = i+1
+        coefDansLaFonctionObjective = i
+
+        if tableauOccurence[i] == plusGrosCoef
+            trouve = true
+        end
+
+    end
+
+    @show coefDansLaFonctionObjective
+    #@show fonctionUtilite
+
+    supprimerLePlusGrosCoef(A, coefDansLaFonctionObjective)
 
 end
 
-function Occ(v, m)
-    cmpt = 0
+#fonction qui retourne les occurences de chacunes des variables x1, x2, x3 ect..
+
+function Occ(v, m, cmpt = 0)
 
     for i in 1:m
         cmpt = cmpt + v[i]
     end
 
-    return cmpt
+    cmpt
 end
 
+# fonction qui retourne la fonction d'utilité en ordre decroissant
 
 function calculFonctionUtilité(tableauOccurence, n)
 
@@ -53,11 +86,12 @@ function calculFonctionUtilité(tableauOccurence, n)
         j = j-1
         i = i+1
     end
+
     newtab
 end
 
 
-#TRI_FUSION
+#TRI_FUSION de base
 
 function merge_sort!(A, p = 1, r = length(A))
     if p < r
@@ -70,7 +104,7 @@ function merge_sort!(A, p = 1, r = length(A))
 end
 
 function merge!(A, p, q, r)
-    sentinel = typemax(eltype(A))
+    sentinel = typemax(eltype(A)) # une grand M
     L = A[p:q]
     R = A[(q+1):r]
     push!(L, sentinel)
@@ -88,31 +122,26 @@ function merge!(A, p, q, r)
 end
 
 
-#= croissant
-function merge_sort!(A, p = 1, r = length(A))
-    if p < r
-        q = div(p+r, 2)
-        merge_sort!(A, p, q)
-        merge_sort!(A, q+1, r)
-        merge!(A, p, q, r)
-    end
-    A
-end
+function supprimerLePlusGrosCoef(A, coefDansLaFonctionObjective)
+    #=@show A
+    m, n = size(A)
+    APrime = zeros(Int, m, n)
+    trouvé::Bool = false
 
-function merge!(A, p, q, r)
-    sentinel = typemax(eltype(A))
-    L = A[p:q]
-    R = A[(q+1):r]
-    push!(L, sentinel)
-    push!(R, sentinel)
-    i, j = 1, 1
-    for k in p:r
-      if L[i] <= R[j]
-          A[k] = L[i]
-          i += 1
-      else
-          A[k] = R[j]
-          j += 1
-      end
+    for i in 1:m
+        for j in 1:n
+            if(coefDansLaFonctionObjective == A[i,j])
+                trouvé = true
+            end
+        end
     end
-end=#
+
+
+
+    @show trouvé=#
+
+    for i in 1:n
+        V[i][coefDansLaFonctionObjective]
+    end
+
+end
