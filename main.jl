@@ -20,7 +20,7 @@ C, A = loadSPP(fname)
 @show A
 glouton(C,A)
 
-# Solving a SPP instance with GLPK
+#= Solving a SPP instance with GLPK
 println("\nSolving...")
 solverSelected = GLPK.Optimizer
 spp = setSPP(C, A)
@@ -31,6 +31,7 @@ optimize!(spp)
 # Displaying the results
 println("z = ", objective_value(spp))
 print("x = "); println(value.(spp[:x]))
+=#
 
 # =========================================================================== #
 
