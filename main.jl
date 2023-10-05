@@ -18,8 +18,10 @@ fname = "Data/didactic.dat"
 C, A = loadSPP(fname)
 @show C
 @show A
-glouton(C,A)
-
+println(typeof(A[:,1]))
+println((A[:,1]))
+sol = glouton(C,A)
+@show(sol)
 #= Solving a SPP instance with GLPK
 println("\nSolving...")
 solverSelected = GLPK.Optimizer
