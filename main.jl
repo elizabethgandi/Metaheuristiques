@@ -20,8 +20,10 @@ C, A = loadSPP(fname)
 @show A
 println(typeof(A[:,1]))
 println((A[:,1]))
-sol = glouton(C,A)
-@show(sol)
+
+glouton(C,A)
+#@show(sol)
+
 #= Solving a SPP instance with GLPK
 println("\nSolving...")
 solverSelected = GLPK.Optimizer
