@@ -18,8 +18,6 @@ fname = "Data/didactic.dat"
 C, A = loadSPP(fname)
 @show C
 @show A
-println(typeof(A[:,1]))
-println((A[:,1]))
 
 glouton(C,A)
 #@show(sol)

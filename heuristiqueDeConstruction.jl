@@ -7,15 +7,23 @@ function glouton(C, A)
 
     # Initialisation
     n = size(A,2)       # n nombre de variables
+    @show(n)
     m = size(A,1)       # m nombre de contraintes
-    sol = fill(0, length(C));     # Vecteur de base de la solution
-    
+    sol = Vector{Int64}(undef, n)     # Vecteur de base de la solution
+    index = Vector{Int64}(undef, n)
+
     # Définition d'un vecteur de contraintes
     constraints = Vector{Vector{Int64}}(undef, m)
 
     for i in eachindex(constraints)
         constraints[i] = A[i,:]
     end
+
+    for i in eachindex(index)
+        index[i] = i
+        sol[i] = 0
+    end
+    @show(index)
 
     candidates = utility(C, constraints)
 
@@ -28,25 +36,18 @@ function glouton(C, A)
         bestCandidate = findfirst(x->x==maximum(candidates), candidates)
         #Mauvais indice !!
 
-
         @show(bestCandidate)
-        sol[bestCandidate] = 1
+        @show(index)
+        sol[index[bestCandidate]] = 1
 
         # Mise a jour des coefficents et contraintes (? mise a 0 ?)
         # Coefficients
-        #C[bestCandidate] = 0
+
         deleteat!(C, bestCandidate)
+        deleteat!(index, bestCandidate)
         # Contraintes
         for i in 1:length(constraints)
             deleteat!(constraints[i], bestCandidate)
-            #=
-            if A[i, bestCandidate] != 0
-                for j in 1:size(A,2)
-                    A[i,j] = 0
-                end
-                deleteat!(A,i)
-            end
-            =#
         end
         candidates = utility(C, constraints)
     end
