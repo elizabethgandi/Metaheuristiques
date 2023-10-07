@@ -19,11 +19,20 @@ C, A = loadSPP(fname)
 @show C
 @show A
 
-glouton(C,A)
-#@show(sol)
+println("\nSolving with Glouton...")
+x = glouton(copy(C),A)
 
-#= Solving a SPP instance with GLPK
-println("\nSolving...")
+z = 0
+for i in eachindex(solution)
+    if solution[i] == 1
+        z = z + C[i]
+    end
+end
+@show z
+@show x
+
+# Solving a SPP instance with GLPK
+println("\nSolving with GLPK...")
 solverSelected = GLPK.Optimizer
 spp = setSPP(C, A)
 
@@ -33,7 +42,7 @@ optimize!(spp)
 # Displaying the results
 println("z = ", objective_value(spp))
 print("x = "); println(value.(spp[:x]))
-=#
+
 
 # =========================================================================== #
 
