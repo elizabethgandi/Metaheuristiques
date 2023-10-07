@@ -1,5 +1,6 @@
 include("getfname.jl")
 
+
 # Résoudre pb de division par 0
 
 # Résolution SPP par algorithme glouton
@@ -82,4 +83,30 @@ function cond(v)
         end
     end
     return false
+end
+
+# Retourne les lignes à supr en fonction de la matrice et de l'index du meilleur candidat
+function getline(A, index)
+    lines::Set{Int64} = Set()
+    for i in eachindex(A)
+        if (A[i][index] != 0)
+            push!(lines, i)
+        end
+    end
+    return lines
+end
+
+# Retourne les colonnes à supr en fonction de la matrice et de l'ensemble des lignes à supr
+function getColumn(A, lines)
+    column::Set{Int64} = Set()
+    for i in lines
+        println("i :", i)
+        for j in 1:length(A[1])
+            println("j :", j)
+            if (A[i][j] != 0)
+                push!(column, j)
+            end
+        end
+    end
+    return column
 end
