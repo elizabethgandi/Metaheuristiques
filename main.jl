@@ -23,7 +23,6 @@ println("\nSolving with Glouton...")
 Ctemp = copy(C)
 x = glouton(Ctemp,A)
 
-
 global z = 0
 for i in eachindex(x)
     if x[i] == 1

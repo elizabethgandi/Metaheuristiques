@@ -8,12 +8,12 @@ using OrderedCollections
 function glouton(C, A)
 
     # Initialisation
-    n = size(A,2)                       # n nombre de variables
-    m = size(A,1)                       # m nombre de contraintes
-    sol = Vector{Int64}(undef, n)       # Vecteur de base de la solution
+    n     = size(A,2)                   # n nombre de variables
+    m     = size(A,1)                   # m nombre de contraintes
+    sol   = Vector{Int64}(undef, n)     # Vecteur de base de la solution
     index = Vector{Int64}(undef, n)     # Index d'origines des variables
 
-    lines = OrderedSet{Int64}()
+    lines  = OrderedSet{Int64}()
     column = OrderedSet{Int64}()
 
     # Définition d'un vecteur de contraintes
@@ -25,10 +25,8 @@ function glouton(C, A)
 
     for i in eachindex(index)
         index[i] = i
-        sol[i] = 0
+        sol[i]   = 0
     end
-
-    z = 0
 
     candidates = utility(C, constraints)
 
@@ -41,13 +39,15 @@ function glouton(C, A)
         sol[index[bestCandidate]] = 1
 
         # Suppression des lignes et colonnes dans le modele
-        lines = getline(constraints, bestCandidate)
+        lines  = getline(constraints, bestCandidate)
         column = getColumn(constraints, lines)
+
         sort!(column)
         sort!(lines)
         deleteat!(constraints, lines)
+
         for i in eachindex(constraints)
-                deleteat!(constraints[i], column)
+            deleteat!(constraints[i], column)
         end
         deleteat!(C, column)
         deleteat!(index, column)
@@ -60,35 +60,44 @@ end
 
 function utility(C, A)
     elt = Vector{Float64}(undef, length(C))
+
     for i in eachindex(C)
         occ = cptOcc(A, i)
         elt[i] = C[i]/occ
     end
+
     return elt
 end
 
 function cptOcc(v::Vector{Vector{Int64}}, column)
     cpt = 0
+
     for i in eachindex(v)
         cpt = cpt + v[i][column]
     end
+
     return cpt
 end
 
 # Retourne les lignes à supr en fonction de la matrice et de l'index du meilleur candidat
+
 function getline(A, index)
     lines = OrderedSet{Int64}()
+
     for i in eachindex(A)
         if (A[i][index] != 0)
             push!(lines, i)
         end
     end
+
     return lines
 end
 
 # Retourne les colonnes à supr en fonction de la matrice et de l'ensemble des lignes à supr
+
 function getColumn(A, lines)
     column = OrderedSet{Int64}()
+
     for i in lines
         for j in 1:length(A[1])
             if (A[i][j] != 0)
@@ -96,6 +105,7 @@ function getColumn(A, lines)
             end
         end
     end
+    
     return column
 end
 
