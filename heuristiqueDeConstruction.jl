@@ -30,6 +30,8 @@ function glouton(C, A)
 
     candidates = utility(C, constraints)
 
+    z = 0
+
     while !(isempty(candidates))
 
         # Selection de l'indice du meilleur candidat
@@ -37,6 +39,9 @@ function glouton(C, A)
 
         # Mise à jour de la base de la solution
         sol[index[bestCandidate]] = 1
+
+        # Mise à jour de la valeur de la fonction objective à chaque itérations
+        z = z + C[bestCandidate]
 
         # Suppression des lignes et colonnes dans le modele
         lines  = getline(constraints, bestCandidate)
@@ -54,8 +59,9 @@ function glouton(C, A)
 
         # Calcul de la fonction d'utilite pour la prochaine iteration
         candidates = utility(C, constraints)
+
     end
-    return sol
+    return sol, z
 end
 
 function utility(C, A)

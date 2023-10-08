@@ -15,20 +15,15 @@ include("heuristiqueDeConstruction.jl")
 # Loading a SPP instance
 println("\nLoading...")
 fname = "Data/didactic.dat"
+#fname = "Data/pb_100rnd0100.dat"
 C, A = loadSPP(fname)
 @show C
 @show A
 
 println("\nSolving with Glouton...")
 Ctemp = copy(C)
-x = glouton(Ctemp,A)
+x, z = glouton(Ctemp,A)
 
-global z = 0
-for i in eachindex(x)
-    if x[i] == 1
-        global z = z + C[i]
-    end
-end
 @show z
 @show x
 
@@ -51,8 +46,6 @@ print("x = "); println(value.(spp[:x]))
 #=println("\nCollecting...")
 target = "Data"
 fnames = getfname(target)=#
-
-
 
 
 println("\nThat's all folks !")
