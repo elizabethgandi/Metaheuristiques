@@ -20,12 +20,14 @@ C, A = loadSPP(fname)
 @show A
 
 println("\nSolving with Glouton...")
-x = glouton(copy(C),A)
+Ctemp = copy(C)
+x = glouton(Ctemp,A)
 
-z = 0
-for i in eachindex(solution)
-    if solution[i] == 1
-        z = z + C[i]
+
+global z = 0
+for i in eachindex(x)
+    if x[i] == 1
+        global z = z + C[i]
     end
 end
 @show z

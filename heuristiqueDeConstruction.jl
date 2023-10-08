@@ -28,6 +28,8 @@ function glouton(C, A)
         sol[i] = 0
     end
 
+    z = 0
+
     candidates = utility(C, constraints)
 
     while !(isempty(candidates))
