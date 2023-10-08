@@ -14,11 +14,9 @@ include("heuristiqueDeConstruction.jl")
 
 # Loading a SPP instance
 println("\nLoading...")
-#fname = "Data/didactic.dat"
-fname = "Data/pb_200rnd0100.dat"
+fname = "Data/didactic.dat"
+#fname = "Data/pb_200rnd0100.dat"
 C, A = loadSPP(fname)
-#@show C
-#@show A
 
 println("\nSolving with Glouton...")
 Ctemp = copy(C)

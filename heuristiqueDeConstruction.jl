@@ -29,12 +29,18 @@ function glouton(C, A)
         sol[i]   = 0
     end
 
+    sol1 = zeros(Int, size(index, 1))
+
     candidates = utility(C, constraints)
+    #candiTemp = utility(C, constraints)
 
     while !(isempty(candidates))
 
         # Selection de l'indice du meilleur candidat
         bestCandidate = findfirst(x->x==maximum(candidates), candidates)
+        #argmax pas necessaire le tri
+        #res = argmax(candiTemp)
+        #@show res
 
         # Mise à jour de la base de la solution
         sol[index[bestCandidate]] = 1
@@ -53,12 +59,12 @@ function glouton(C, A)
         for i in eachindex(constraints)
             deleteat!(constraints[i], column)
         end
+
         deleteat!(C, column)
         deleteat!(index, column)
 
         # Calcul de la fonction d'utilite pour la prochaine iteration
         candidates = utility(C, constraints)
-
     end
     return sol, z
 end
@@ -113,4 +119,3 @@ function getColumn(A, lines)
     
     return column
 end
-
