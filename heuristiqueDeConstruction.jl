@@ -12,6 +12,7 @@ function glouton(C, A)
     m     = size(A,1)                   # m nombre de contraintes
     sol   = Vector{Int64}(undef, n)     # Vecteur de base de la solution
     index = Vector{Int64}(undef, n)     # Index d'origines des variables
+    z     = 0                           # z la valeur de la fonction objective
 
     lines  = OrderedSet{Int64}()
     column = OrderedSet{Int64}()
@@ -29,8 +30,6 @@ function glouton(C, A)
     end
 
     candidates = utility(C, constraints)
-
-    z = 0
 
     while !(isempty(candidates))
 
