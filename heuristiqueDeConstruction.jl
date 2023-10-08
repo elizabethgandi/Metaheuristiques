@@ -1,165 +1,101 @@
 include("getfname.jl")
+using OrderedCollections
 
+
+# Résoudre pb de division par 0
+
+# Résolution SPP par algorithme glouton
 function glouton(C, A)
 
-    #m lignes et n colonnes
+    # Initialisation
+    n = size(A,2)                       # n nombre de variables
+    m = size(A,1)                       # m nombre de contraintes
+    sol = Vector{Int64}(undef, n)       # Vecteur de base de la solution
+    index = Vector{Int64}(undef, n)     # Index d'origines des variables
 
-    inutile, n = size(A) 
+    lines = OrderedSet{Int64}()
+    column = OrderedSet{Int64}()
 
-    (v1, v2, v3, v4, v5, v6, v7, v8, v9) = [view(A, :, i) for i in 1:size(A, 2)]
+    # Définition d'un vecteur de contraintes
+    constraints = Vector{Vector{Int64}}(undef, m)
 
-    V = [zeros(n) for _ in 1:n]
-    V = (v1, v2, v3, v4, v5, v6, v7, v8, v9)
-
-    coefDansLaFonctionObjective = update(A, C, V)
-
-    supprimerLePlusGrosCoef(A, coefDansLaFonctionObjective)
-#= 
-    if (fonctionUtilite[1] == 0)
-        println(" Tous les éléments ont été mis dans le sac")
-    end
-    else if {
-        le sac est rempli sans avoir prit tous les éléments
-    } 
-    else {
-        #mettre à jour la matrice A sinon boucle infinie
-        glouton(C, A)
-    }=#
-
-end
-
-#fonction qui retourne les occurences de chacunes des variables x1, x2, x3 ect..
-
-function Occ(v, m, cmpt = 0)
-
-    for i in 1:m
-        cmpt = cmpt + v[i]
+    for i in eachindex(constraints)
+        constraints[i] = A[i,:]
     end
 
-    cmpt
-end
-
-# fonction qui retourne la fonction d'utilité en ordre décroissant
-
-function calculFonctionUtilité(tableauOccurence, n)
-
-    newtab::Vector{Float64} = zeros(Int, n)
-
-    tOcc = merge_sort!(tableauOccurence)
-
-    i::Int64 = 1
-    j::Int64 = 9
-
-    while i != 9
-        newtab[i] = tOcc[j]
-        j = j-1
-        i = i+1
+    for i in eachindex(index)
+        index[i] = i
+        sol[i] = 0
     end
 
-    newtab
-end
+    z = 0
 
+    candidates = utility(C, constraints)
 
-#TRI_FUSION de base
+    while !(isempty(candidates))
 
-function merge_sort!(A, p = 1, r = length(A))
-    if p < r
-        q = div(p+r, 2)
-        merge_sort!(A, p, q)
-        merge_sort!(A, q+1, r)
-        merge!(A, p, q, r)
-    end
-    A
-end
+        # Selection de l'indice du meilleur candidat
+        bestCandidate = findfirst(x->x==maximum(candidates), candidates)
 
-function merge!(A, p, q, r)
-    sentinel = typemax(eltype(A)) # une grand M
-    L = A[p:q]
-    R = A[(q+1):r]
-    push!(L, sentinel)
-    push!(R, sentinel)
-    i, j = 1, 1
-    for k in p:r
-      if L[i] <= R[j]
-          A[k] = L[i]
-          i += 1
-      else
-          A[k] = R[j]
-          j += 1
-      end
-    end
-end
+        # Mise à jour de la base de la solution
+        sol[index[bestCandidate]] = 1
 
-# Fonction qui retourne le coef le plus gros de la fonction objective 
-
-function update(A, C, V)
-
-    m, n = size(A)
-
-    fonctionUtilite::Vector{Float64} = zeros(Int, n)
-    tableauOccurence::Vector{Float64} = zeros(Int, n)
-    cmpt::Int64 = 0
-
-
-    for i in 1:n
-        cmpt = Occ(V[i], m)
-        tableauOccurence[i] = C[i]/cmpt
-    end
-
-    fonctionUtilite = calculFonctionUtilité(tableauOccurence, n)
-
-    @show tableauOccurence
-    @show fonctionUtilite
-
-    println("\n")
-
-    plusGrosCoef = fonctionUtilite[1]
-    @show plusGrosCoef
-
-    #recuperer l'indice du plus gros coef
-    trouve::Bool = false
-    i::Int64 = 0
-    coefDansLaFonctionObjective::Int64 = 0
-
-    while trouve != true
-
-        i = i+1
-        coefDansLaFonctionObjective = i
-
-        if tableauOccurence[i] == plusGrosCoef
-            trouve = true
+        # Suppression des lignes et colonnes dans le modele
+        lines = getline(constraints, bestCandidate)
+        column = getColumn(constraints, lines)
+        sort!(column)
+        sort!(lines)
+        deleteat!(constraints, lines)
+        for i in eachindex(constraints)
+                deleteat!(constraints[i], column)
         end
+        deleteat!(C, column)
+        deleteat!(index, column)
 
+        # Calcul de la fonction d'utilite pour la prochaine iteration
+        candidates = utility(C, constraints)
     end
-
-    @show coefDansLaFonctionObjective
-    #@show fonctionUtilite
-
-    coefDansLaFonctionObjective
-    
+    return sol
 end
 
+function utility(C, A)
+    elt = Vector{Float64}(undef, length(C))
+    for i in eachindex(C)
+        occ = cptOcc(A, i)
+        elt[i] = C[i]/occ
+    end
+    return elt
+end
 
-function supprimerLePlusGrosCoef(A, coefDansLaFonctionObjective)
-    #=@show A
-    m, n = size(A)
-    APrime = zeros(Int, m, n)
-    trouvé::Bool = false
+function cptOcc(v::Vector{Vector{Int64}}, column)
+    cpt = 0
+    for i in eachindex(v)
+        cpt = cpt + v[i][column]
+    end
+    return cpt
+end
 
-    for i in 1:m
-        for j in 1:n
-            if(coefDansLaFonctionObjective == A[i,j])
-                trouvé = true
+# Retourne les lignes à supr en fonction de la matrice et de l'index du meilleur candidat
+function getline(A, index)
+    lines = OrderedSet{Int64}()
+    for i in eachindex(A)
+        if (A[i][index] != 0)
+            push!(lines, i)
+        end
+    end
+    return lines
+end
+
+# Retourne les colonnes à supr en fonction de la matrice et de l'ensemble des lignes à supr
+function getColumn(A, lines)
+    column = OrderedSet{Int64}()
+    for i in lines
+        for j in 1:length(A[1])
+            if (A[i][j] != 0)
+                push!(column, j)
             end
         end
     end
-
-
-
-    @show trouvé
-
-    for i in 1:n
-        V[i][coefDansLaFonctionObjective]
-    end=#
-
+    return column
 end
+
