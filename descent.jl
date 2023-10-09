@@ -13,7 +13,6 @@ function deepestDescent(C, A, x)
     # retourner x
 end
 
-
 # Retourne la valeur de la fonction objectif
 function z(C, x)
     value::Float64 = 0
@@ -32,8 +31,22 @@ met xi avec le plus de variables dans ses contraintes à 0  (k=1)
 met un maximum de xj libéré à 1 (p=|xj|)
 vérifier que la solution est bien admissible
 =#
-function mvt(x)
 
+# met une variable à 1 et une autre différente à 0
+function mvt(x)
+    N = Vector{Vector{Int64}}(undef, 0)
+    @show index_0 = findall(t->t==0, x)
+    @show index_1 = findall(t->t==1, x)
+    for i in index_1
+        switch = copy(x)
+        switch[i] = 0
+        for j in index_0
+            switch2 = copy(switch)
+            switch2[j] = 1
+            push!(N, switch2)
+        end
+    end
+    return N
 end
 
 # Vérifie que base est bien admissible
