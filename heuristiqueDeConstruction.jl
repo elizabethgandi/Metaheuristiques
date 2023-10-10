@@ -11,8 +11,11 @@ function glouton(C, A)
     index = Vector{Int64}(undef, n)     # Index d'origines des variables
     z     = 0                           # z la valeur de la fonction objective
 
-    lines  = OrderedSet{Int64}()
-    column = OrderedSet{Int64}()
+    lines    = OrderedSet{Int64}()
+    column   = OrderedSet{Int64}()
+    #
+    lignes   = Vector{Int64}(undef, n)
+    colonnes = Vector{Int64}(undef, n)
 
     # Définition d'un vecteur de contraintes
     constraints = Vector{Vector{Int64}}(undef, m)
@@ -20,25 +23,26 @@ function glouton(C, A)
     for i in eachindex(constraints)
         constraints[i] = A[i,:]
     end
-    @show constraints
 
-    sol   = zeros(Int, size(C, 1))
-    sommeA   = zeros(Int, size(C, 1))
-    index = collect(1:size(C, 1))
-
+    sol        = zeros(Int, size(C, 1))
+    sommeA     = zeros(Int, size(C, 1))
+    index      = collect(1:size(C, 1))
     candidates = utility(C, constraints)
+    #
+    lignes     = zeros(Int, size(C, 1))
+    colonnes   = zeros(Int, size(C, 1))
 
-    while !(isempty(candidates))
+
+    while !(isempty(candidates))#(taille !=0)#
 
         sommeA = vec(sum(A, dims=2))
-        @show sommeA
 
-        #pré-traitrement: si il n'y a qu'une seule variable dans la ligne elle est choisie puis supprimée
-        test = findfirst(x->x==minimum(sommeA), sommeA)
+        #pré-traitrement: si il n'y a qu'une seule variable dans une des lignes elle est choisie puis supprimée
+        isAlone = findfirst(x->x==minimum(sommeA), sommeA)
 
-        if sommeA[test] == 1
-            A = A[1:size(A,1) .!= test,: ]
-            bestCandidate = test
+        if sommeA[isAlone] == 1
+            A = A[1:size(A,1) .!= isAlone,: ]
+            bestCandidate = isAlone
         else
             # Selection de l'indice du meilleur candidat
             bestCandidate = findfirst(x->x==maximum(candidates), candidates)
@@ -54,33 +58,29 @@ function glouton(C, A)
         z = z + C[bestCandidate]
 
         # Suppression des lignes et colonnes dans le modele
-        lines  = getline(constraints, bestCandidate)
+        lines  = getline(constraints, bestCandidate) # identifie les éléments à 1 dans la contraintes
         column = getColumn(constraints, lines)
 
         #si une ligne complete est à 0
-        test2 = findfirst(x->x==0, sommeA)
+        isEqualZero = findfirst(x->x==0, sommeA)
 
-        if test2 !== nothing && sommeA[test2] == 0
-            A = A[1:size(A,1) .!= test2,: ]
+        if isEqualZero !== nothing && sommeA[isEqualZero] == 0
+            A = A[1:size(A,1) .!= isEqualZero,: ]
         end
 
         sort!(column)
         sort!(lines)
-        #@show lines
         deleteat!(constraints, lines)
 
         for i in eachindex(constraints)
             deleteat!(constraints[i], column)
         end
 
-        #@show column
         deleteat!(C, column)
-        #A = A[1:size(A,1) .!= :,column ]
         deleteat!(index, column)
 
         # Calcul de la fonction d'utilite pour la prochaine iteration
-        candidates = utility(C, constraints) #PEPE faire un argmax
-
+        candidates = utility(C, constraints)
     end
     return sol, z
 end
@@ -116,7 +116,6 @@ function getline(A, index)
             push!(lines, i)
         end
     end
-
     return lines
 end
 
@@ -132,6 +131,5 @@ function getColumn(A, lines)
             end
         end
     end
-    
     return column
 end
