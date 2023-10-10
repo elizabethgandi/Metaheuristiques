@@ -9,6 +9,7 @@ include("loadSPP.jl")
 include("setSPP.jl")
 include("getfname.jl")
 include("heuristiqueDeConstruction.jl")
+include("simpleDescent.jl")
 
 # =========================================================================== #
 
@@ -22,16 +23,11 @@ C, A = loadSPP(fname)
 println("\nSolving with Glouton...")
 Ctemp = copy(C)
 x = glouton(Ctemp,A)
-
-
-global z = 0
-for i in eachindex(x)
-    if x[i] == 1
-        global z = z + C[i]
-    end
-end
-@show z
 @show x
+
+println("\nUsing simple descent to upgrade the solution")
+xnew = simpleDescent(copy(C), copy(A), copy(x))
+@show xnew
 
 # Solving a SPP instance with GLPK
 println("\nSolving with GLPK...")
