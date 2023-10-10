@@ -29,6 +29,17 @@ println("\nUsing simple descent to upgrade the solution")
 xnew = simpleDescent(copy(C), copy(A), copy(x))
 @show xnew
 
+
+println("\nUsing another simple descent to upgrade the solution")
+xnew2 = simpleDescent2(copy(C), copy(A), copy(x))
+@show xnew2
+
+#=
+# Test fun 
+xtest = simpleDescent(copy(C), copy(A), [0,0,1,1,0,1,0,0])
+@show xtest
+=#
+
 # Solving a SPP instance with GLPK
 println("\nSolving with GLPK...")
 solverSelected = GLPK.Optimizer

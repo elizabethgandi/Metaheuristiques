@@ -34,6 +34,36 @@ function simpleDescent(C, A, x)
     return Array(x)
 end
 
+function simpleDescent2(C, A, x) 
+    # Initialisation
+    x = sparsevec(x)
+    A = sparse(A)
+    neighbors = Vector{SparseVector{Int64,Int64}}()
+
+    #visited = Vector{SparseVector{Int64,Int64}}()
+    #push!(visited, x)
+
+    # Calcul voisinage N(x)
+    neighbors = neighborhood_2(A, x)
+
+    val = z(C, x)
+    # Tant que neighbors non vide 
+    while !isempty(neighbors)
+        newx = pop!(neighbors)
+        println("try : ", Array(newx))
+        # si x' € neighbors tq z(x) < z(x')
+        if val < z(C, newx)
+            println(Array(newx), " may be better than x... ")
+            if isAllowed(A, newx)
+                println("Going deeper with ", Array(newx))
+                return simpleDescent(C, A, newx)
+            end
+            println(Array(newx), " not allowed")
+        end
+        println("fail")
+    end
+    return Array(x)
+end
 
 # Retourne la valeur de la fonction objectif
 function z(C, x::SparseVector{Int64})
@@ -44,14 +74,7 @@ function z(C, x::SparseVector{Int64})
     return value
 end
 
-# Mouvement x -> x'
-#=
-Idee 
-met xi avec le plus de variables dans ses contraintes à 0  (k=1)
-met un maximum de xj libéré à 1 (p=|xj|)
-vérifier que la solution est bien admissible
-=#
-
+# AddDrop pour chaque variable à 1 avec toutes les variables à 0
 function neighborhood_1(x::SparseVector{Int64})
     neighbors = Vector{SparseVector{Int64}}(undef, 0)
     # Y a t il équivalence entre findall(!iszero, x) et findnz(x) ???
@@ -63,13 +86,35 @@ function neighborhood_1(x::SparseVector{Int64})
     return neighbors
 end
 
-# Mouvement simple
+# Mouvement simple : i à 0, j à 1
 function addDrop(x, i, j)
     x[i] = 0
     x[j] = 1
     # on supprime les zeros stockés
     dropzeros!(x)
     return x
+end
+
+# Mise à 0 de la variable apparaissant dans le plus de contraintes et mise à 1 de 2 autres contraintes nulles (k-p de type 1-2)
+function neighborhood_2(A::SparseMatrixCSC{Int64, Int64}, x::SparseVector{Int64})
+    coef = sum(A, dims=2)
+    max = findfirst(x->x==maximum(coef), coef)
+    return kp(copy(x), max)
+end
+
+# i à 0, 2 elts à 1, retourne un vector de (au plus) 10 solutions possibles aléatoire
+function kp(x, i)
+    neighbors = Vector{SparseVector{Int64}}(undef, 0)
+    index = findall(iszero, x)
+    @show index
+    x[i] = 0
+    for j in 1:10
+        t = copy(x)
+        t[rand(index)] = 1
+        t[rand(index)] = 1
+        push!(neighbors, t)
+    end
+    return unique!(neighbors)
 end
 
 # Vérifie que base est bien admissible
