@@ -24,6 +24,11 @@ function glouton(C, A)
         constraints[i] = A[i,:]
     end
 
+    #for i in eachindex(index)
+    #    index[i] = i
+    #    sol[i] = 0
+    #end
+
     sol        = zeros(Int, size(C, 1))
     sommeA     = zeros(Int, size(C, 1))
     index      = collect(1:size(C, 1))
@@ -49,7 +54,7 @@ function glouton(C, A)
         end
         
         # La colonne du poids max est mise à 0
-        A[:,bestCandidate] .= 0;
+        #A[:,bestCandidate] .= 0; !pose un probleme!
         
         # Mise à jour de la base de la solution
         sol[index[bestCandidate]] = 1
