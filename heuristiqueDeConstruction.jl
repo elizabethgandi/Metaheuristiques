@@ -1,9 +1,6 @@
 include("getfname.jl")
 using OrderedCollections
 
-
-# Résoudre pb de division par 0
-
 # Résolution SPP par algorithme glouton
 function glouton(C, A)
 
@@ -23,25 +20,33 @@ function glouton(C, A)
     for i in eachindex(constraints)
         constraints[i] = A[i,:]
     end
+    @show constraints
 
-    for i in eachindex(index)
-        index[i] = i
-        sol[i]   = 0
-    end
-
-    sol1 = zeros(Int, size(index, 1))
+    sol   = zeros(Int, size(C, 1))
+    sommeA   = zeros(Int, size(C, 1))
+    index = collect(1:size(C, 1))
 
     candidates = utility(C, constraints)
-    #candiTemp = utility(C, constraints)
 
     while !(isempty(candidates))
 
-        # Selection de l'indice du meilleur candidat
-        bestCandidate = findfirst(x->x==maximum(candidates), candidates)
-        #argmax pas necessaire le tri
-        #res = argmax(candiTemp)
-        #@show res
+        sommeA = vec(sum(A, dims=2))
+        @show sommeA
 
+        #pré-traitrement: si il n'y a qu'une seule variable dans la ligne elle est choisie puis supprimée
+        test = findfirst(x->x==minimum(sommeA), sommeA)
+
+        if sommeA[test] == 1
+            A = A[1:size(A,1) .!= test,: ]
+            bestCandidate = test
+        else
+            # Selection de l'indice du meilleur candidat
+            bestCandidate = findfirst(x->x==maximum(candidates), candidates)
+        end
+        
+        # La colonne du poids max est mise à 0
+        A[:,bestCandidate] .= 0;
+        
         # Mise à jour de la base de la solution
         sol[index[bestCandidate]] = 1
 
@@ -52,19 +57,30 @@ function glouton(C, A)
         lines  = getline(constraints, bestCandidate)
         column = getColumn(constraints, lines)
 
+        #si une ligne complete est à 0
+        test2 = findfirst(x->x==0, sommeA)
+
+        if test2 !== nothing && sommeA[test2] == 0
+            A = A[1:size(A,1) .!= test2,: ]
+        end
+
         sort!(column)
         sort!(lines)
+        #@show lines
         deleteat!(constraints, lines)
 
         for i in eachindex(constraints)
             deleteat!(constraints[i], column)
         end
 
+        #@show column
         deleteat!(C, column)
+        #A = A[1:size(A,1) .!= :,column ]
         deleteat!(index, column)
 
         # Calcul de la fonction d'utilite pour la prochaine iteration
-        candidates = utility(C, constraints)
+        candidates = utility(C, constraints) #PEPE faire un argmax
+
     end
     return sol, z
 end
