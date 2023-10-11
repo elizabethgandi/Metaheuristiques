@@ -1,4 +1,5 @@
 include("getfname.jl")
+using (SparseArrays)
 using OrderedCollections
 
 # Résolution SPP par algorithme glouton
@@ -31,13 +32,15 @@ function glouton(C, A)
     #
     lignes     = zeros(Int, size(C, 1))
     colonnes   = zeros(Int, size(C, 1))
+    @show A
 
 
-    while !(isempty(candidates))#(taille !=0)#
+    while !(isempty(candidates))
 
+        # Calcul la valeur de chancune des lignes de la matrice A
         sommeA = vec(sum(A, dims=2))
 
-        #pré-traitrement: si il n'y a qu'une seule variable dans une des lignes elle est choisie puis supprimée
+        # Si il n'y a qu'une seule variable dans une des lignes elle est choisie puis supprimée
         isAlone = findfirst(x->x==minimum(sommeA), sommeA)
 
         if sommeA[isAlone] == 1
@@ -49,7 +52,7 @@ function glouton(C, A)
         end
         
         # La colonne du poids max est mise à 0
-        #A[:,bestCandidate] .= 0; !pose un probleme!
+       #A[:,bestCandidate] .= 0; #!pose un probleme!
         
         # Mise à jour de la base de la solution
         sol[index[bestCandidate]] = 1
@@ -61,7 +64,7 @@ function glouton(C, A)
         lines  = getline(constraints, bestCandidate) # identifie les éléments à 1 dans la contraintes
         column = getColumn(constraints, lines)
 
-        #si une ligne complete est à 0
+        # Si une ligne complete est à 0
         isEqualZero = findfirst(x->x==0, sommeA)
 
         if isEqualZero !== nothing && sommeA[isEqualZero] == 0
@@ -85,6 +88,8 @@ function glouton(C, A)
     return sol, z
 end
 
+# Retourne la fonction utilité
+
 function utility(C, A)
     elt = Vector{Float64}(undef, length(C))
 
@@ -95,6 +100,8 @@ function utility(C, A)
 
     return elt
 end
+
+# Retourne l' occurence de chacune des variables 
 
 function cptOcc(v::Vector{Vector{Int64}}, column)
     cpt = 0
