@@ -14,9 +14,6 @@ function glouton(C, A)
 
     lines    = OrderedSet{Int64}()
     column   = OrderedSet{Int64}()
-    #
-    lignes   = Vector{Int64}(undef, n)
-    colonnes = Vector{Int64}(undef, n)
 
     # Définition d'un vecteur de contraintes
     constraints = Vector{Vector{Int64}}(undef, m)
@@ -29,13 +26,8 @@ function glouton(C, A)
     sommeA     = zeros(Int, size(C, 1))
     index      = collect(1:size(C, 1))
     candidates = utility(C, constraints)
-    #
-    lignes     = zeros(Int, size(C, 1))
-    colonnes   = zeros(Int, size(C, 1))
-    @show A
 
-
-    while !(isempty(candidates))
+    while !(isempty(candidates)) 
 
         # Calcul la valeur de chancune des lignes de la matrice A
         sommeA = vec(sum(A, dims=2))
@@ -43,16 +35,13 @@ function glouton(C, A)
         # Si il n'y a qu'une seule variable dans une des lignes elle est choisie puis supprimée
         isAlone = findfirst(x->x==minimum(sommeA), sommeA)
 
-        if sommeA[isAlone] == 1
+        if sommeA[isAlone] == 1 
             A = A[1:size(A,1) .!= isAlone,: ]
             bestCandidate = isAlone
         else
             # Selection de l'indice du meilleur candidat
             bestCandidate = findfirst(x->x==maximum(candidates), candidates)
         end
-        
-        # La colonne du poids max est mise à 0
-       #A[:,bestCandidate] .= 0; #!pose un probleme!
         
         # Mise à jour de la base de la solution
         sol[index[bestCandidate]] = 1
@@ -74,7 +63,7 @@ function glouton(C, A)
         sort!(column)
         sort!(lines)
         deleteat!(constraints, lines)
-
+        
         for i in eachindex(constraints)
             deleteat!(constraints[i], column)
         end
