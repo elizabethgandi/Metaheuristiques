@@ -21,8 +21,13 @@ C, A = loadSPP(fname)
 
 println("\nSolving with Glouton...")
 Ctemp = copy(C)
-x = glouton(Ctemp,A)
+
+@time x, z = glouton(Ctemp,A)
+
+@show z
 @show x
+#x = glouton(Ctemp,A)
+
 
 println("\nUsing simple descent to upgrade the solution... may take time")
 xnew = simpleDescent(copy(C), copy(A), copy(x))
@@ -41,7 +46,7 @@ xtest = simpleDescent(copy(C), copy(A), [0,0,1,1,0,1,0,0])
 
 #=
 # Solving a SPP instance with GLPK
-println("\nSolving with GLPK...")
+#=println("\nSolving with GLPK...")
 solverSelected = GLPK.Optimizer
 spp = setSPP(C, A)
 
@@ -51,7 +56,6 @@ optimize!(spp)
 # Displaying the results
 println("z = ", objective_value(spp))
 print("x = "); println(value.(spp[:x]))
-=#
 
 # =========================================================================== #
 
@@ -59,8 +63,6 @@ print("x = "); println(value.(spp[:x]))
 #=println("\nCollecting...")
 target = "Data"
 fnames = getfname(target)=#
-
-
 
 
 println("\nThat's all folks !")
