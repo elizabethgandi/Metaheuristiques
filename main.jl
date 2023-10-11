@@ -16,53 +16,57 @@ include("simpleDescent.jl")
 # Loading a SPP instance
 println("\nLoading...")
 #fname = "Data/didactic.dat"
-fname = "Data/pb_200rnd0100.dat"
+fname = "Data/pb_2000rnd0100.dat"
 C, A = loadSPP(fname)
 
-println("\nSolving with Glouton...")
+#println("\nSolving with Glouton...")
 Ctemp = copy(C)
 
-@time x, z = glouton(Ctemp,A)
+#@time x, zOpt = glouton(Ctemp,A)
+x, zOpt = glouton(Ctemp,A)
 
-@show z
-@show x
-#x = glouton(Ctemp,A)
+#@show zOpt
+#@show x
 
 
-println("\nUsing simple descent to upgrade the solution... may take time")
-xnew = simpleDescent(copy(C), copy(A), copy(x))
-@show xnew
+#=Solving a SPP instance with GLPK
+println("\nSolving with GLPK...")
+solverSelected = GLPK.Optimizer
+spp = setSPP(C, A)
+
+set_optimizer(spp, solverSelected)
+@time optimize!(spp)
+
+# Displaying the results
+println("z = ", objective_value(spp))
+print("x = "); println(value.(spp[:x]))
+=#
+
+
+#println("\nUsing simple descent to upgrade the solution... may take time")
+#@time xnew = simpleDescent(copy(C), copy(A), copy(x))
+#@show xnew
 
 println("\nUsing another simple descent to upgrade the solution")
-xnew2 = simpleDescent2(copy(C), copy(A), copy(x))
+@time xnew2 = simpleDescent2(copy(C), copy(A), copy(x))
 @show xnew2
 
 
-#=
-# Test fun 
+
+#= Test fun 
 xtest = simpleDescent(copy(C), copy(A), [0,0,1,1,0,1,0,0])
 @show xtest
 =#
 
 #=
-# Solving a SPP instance with GLPK
-#=println("\nSolving with GLPK...")
-solverSelected = GLPK.Optimizer
-spp = setSPP(C, A)
+# 
 
-set_optimizer(spp, solverSelected)
-optimize!(spp)
+# =========================================================================== 
 
-# Displaying the results
-println("z = ", objective_value(spp))
-print("x = "); println(value.(spp[:x]))
-
-# =========================================================================== #
-
-# Collecting the names of instances to solve
-#=println("\nCollecting...")
+ Collecting the names of instances to solve
+println("\nCollecting...")
 target = "Data"
-fnames = getfname(target)=#
+fnames = getfname(target)
 
 
-println("\nThat's all folks !")
+println("\nThat's all folks !")=#
