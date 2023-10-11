@@ -23,7 +23,6 @@ println("\nSolving with Glouton...")
 Ctemp = copy(C)
 x = glouton(Ctemp,A)
 @show x
-@show z(C, sparse(x))
 
 println("\nUsing simple descent to upgrade the solution... may take time")
 xnew = simpleDescent(copy(C), copy(A), copy(x))
@@ -32,6 +31,7 @@ xnew = simpleDescent(copy(C), copy(A), copy(x))
 println("\nUsing another simple descent to upgrade the solution")
 xnew2 = simpleDescent2(copy(C), copy(A), copy(x))
 @show xnew2
+
 
 #=
 # Test fun 
