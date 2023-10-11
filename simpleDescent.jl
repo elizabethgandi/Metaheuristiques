@@ -1,71 +1,81 @@
-# Amelioration d'une solution de SSP par algo de descente profonde
 using(SparseArrays)
 
-# Descente simple récursive
-# pas de gestion des sommets déjà visiter !
+#=
+Tentative d'amélioration d'une solution par simple Descente
+2 façons différents de générer le voisinage
+simpleDescent prends a partir d'une solution met chaque variable à 1 à 0 et une variable à 0 à 1 (AddDrop)
+simpleDescent2 prends la variable presente dans le plus de contraintes et la met à 0 et essaie ensuite de mettre 2 variables à 1 aléatoirement kp(1,2)
+=#
+
+# Descente simple 
+# A partir d'une solution met chaque variable à 1 à 0 et une variable à 0 à 1
 function simpleDescent(C, A, x) 
     # Initialisation
     x = sparsevec(x)
     A = sparse(A)
     neighbors = Vector{SparseVector{Int64,Int64}}()
 
-    #visited = Vector{SparseVector{Int64,Int64}}()
-    #push!(visited, x)
+    visited = Vector{SparseVector{Int64,Int64}}()
+    push!(visited, x)
 
     # Calcul voisinage N(x)
     neighbors = neighborhood_1(x)
-
+    # Valeur de reference de la fonction objectif
     val = z(C, x)
-    # Tant que neighbors non vide 
+
+    # Tant qu'il reste des voisins
     while !isempty(neighbors)
         newx = pop!(neighbors)
-        println("try : ", Array(newx))
-        # si x' € neighbors tq z(x) < z(x')
-        if val < z(C, newx)
-            println(Array(newx), " may be better than x... ")
+        
+        # Si le voisin est meilleur et pas déjà visité, on avance
+        if !(newx in visited) && (val <= z(C, newx))
             if isAllowed(A, newx)
-                println("Going deeper with ", Array(newx))
-                return simpleDescent(C, A, newx)
+                x = newx
+                val = z(C, x)
+                neighbors = neighborhood_1(x)
             end
-            println(Array(newx), " not allowed")
         end
-        println("fail")
+        push!(visited, newx)
     end
+    @show z(C,x)
     return Array(x)
 end
 
+# Descente simple 2
+# prends la variable presente dans le plus de contraintes et la met à 0 et essaie ensuite de mettre 2 variables à 1 aléatoirement kp(1,2)
 function simpleDescent2(C, A, x) 
     # Initialisation
     x = sparsevec(x)
     A = sparse(A)
     neighbors = Vector{SparseVector{Int64,Int64}}()
 
-    #visited = Vector{SparseVector{Int64,Int64}}()
-    #push!(visited, x)
+    visited = Vector{SparseVector{Int64,Int64}}()
+    push!(visited, x)
 
     # Calcul voisinage N(x)
     neighbors = neighborhood_2(A, x)
-
+    # Valeur de reference de la fonction objectif
     val = z(C, x)
-    # Tant que neighbors non vide 
+
+    # Tant qu'il reste des voisins 
     while !isempty(neighbors)
         newx = pop!(neighbors)
-        println("try : ", Array(newx))
-        # si x' € neighbors tq z(x) < z(x')
-        if val < z(C, newx)
-            println(Array(newx), " may be better than x... ")
+
+        # Si le voisin est meilleur et pas déjà visité, on avance
+        if !(newx in visited) && (val <= z(C, newx))
             if isAllowed(A, newx)
-                println("Going deeper with ", Array(newx))
-                return simpleDescent(C, A, newx)
+                x = newx
+                val = z(C, x)
+                neighbors = neighborhood_2(C,x)
             end
-            println(Array(newx), " not allowed")
         end
-        println("fail")
+        push!(visited, newx)
     end
+    @show z(C,x)
     return Array(x)
 end
 
-# Retourne la valeur de la fonction objectif
+# Retourne la valeur de la fonction objectif pour une solution x
 function z(C, x::SparseVector{Int64})
     value = 0.0
     for i in findall(!iszero, x)
@@ -102,13 +112,14 @@ function neighborhood_2(A::SparseMatrixCSC{Int64, Int64}, x::SparseVector{Int64}
     return kp(copy(x), max)
 end
 
-# i à 0, 2 elts à 1, retourne un vector de (au plus) 10 solutions possibles aléatoire
+# i à 0, 2 elts à 1, retourne un vecteur de (au plus) le nb de zero dans x solutions possibles aléatoire
 function kp(x, i)
     neighbors = Vector{SparseVector{Int64}}(undef, 0)
     index = findall(iszero, x)
-    @show index
     x[i] = 0
-    for j in 1:10
+    dropzeros!(x)
+    n = max(10, length(index))
+    for j in 1:n
         t = copy(x)
         t[rand(index)] = 1
         t[rand(index)] = 1
@@ -116,6 +127,7 @@ function kp(x, i)
     end
     return unique!(neighbors)
 end
+
 
 # Vérifie que base est bien admissible
 function isAllowed(A::SparseMatrixCSC{Int64, Int64}, x::SparseVector{Int64})
@@ -138,28 +150,3 @@ function isAllowed(A::SparseMatrixCSC{Int64, Int64}, x::SparseVector{Int64})
     end
     return true
 end
-
-
-#=
-# Vérifie que base est bien admissible
-function isAllowed(A, x)
-    index = findall(t->t==1, x)
-    constraints = Vector{Int64}(undef, 0)
-    # Pour chaque variable, regarder dans quelle contrainte elle apparait
-    for i in index
-        append!(constraints, findall(t->t==1, A[:,i]))
-    end
-    unique!(constraints)  # vient de decouvrir ! Super utile, a reutiliser pour le glouton !!!!!!
-
-    # Verifie chacune des contraintes
-    for i in constraints
-        if sum(A[i,:]) > 1
-            return false
-        end
-    end
-    return true
-end
-
-=#
-
-
