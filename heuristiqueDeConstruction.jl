@@ -64,7 +64,6 @@ function glouton(C, A)
         end
 
         constraints = constraints[setdiff(1:end, lignestemp)]
-        coltemp     = coltemp[setdiff(1:end, C)]
         index       = index[setdiff(1:end, lignestemp)]
 
         C = C[setdiff(1:end, lignestemp)]
