@@ -15,21 +15,21 @@ include("simpleDescent.jl")
 
 # Loading a SPP instance
 println("\nLoading...")
-#fname = "Data/didactic.dat"
-fname = "Data/pb_200rnd0100.dat"
+fname = "Data/didactic.dat"
+#fname = "Data/pb_200rnd0100.dat"
 C, A = loadSPP(fname)
 
 println("\nSolving with Glouton...")
 Ctemp = copy(C)
 
-@time x, z = glouton(Ctemp,A)
+@time x, zOpt = glouton(Ctemp,A)
 
-@show z
+@show zOpt
 @show x
 #x = glouton(Ctemp,A)
 
 
-println("\nUsing simple descent to upgrade the solution... may take time")
+#=println("\nUsing simple descent to upgrade the solution... may take time")
 xnew = simpleDescent(copy(C), copy(A), copy(x))
 @show xnew
 
@@ -37,7 +37,7 @@ println("\nUsing another simple descent to upgrade the solution")
 xnew2 = simpleDescent2(copy(C), copy(A), copy(x))
 @show xnew2
 
-
+=#
 #=
 # Test fun 
 xtest = simpleDescent(copy(C), copy(A), [0,0,1,1,0,1,0,0])
@@ -46,7 +46,7 @@ xtest = simpleDescent(copy(C), copy(A), [0,0,1,1,0,1,0,0])
 
 #=
 # Solving a SPP instance with GLPK
-#=println("\nSolving with GLPK...")
+println("\nSolving with GLPK...")
 solverSelected = GLPK.Optimizer
 spp = setSPP(C, A)
 
@@ -60,7 +60,7 @@ print("x = "); println(value.(spp[:x]))
 # =========================================================================== #
 
 # Collecting the names of instances to solve
-#=println("\nCollecting...")
+println("\nCollecting...")
 target = "Data"
 fnames = getfname(target)=#
 
