@@ -4,6 +4,7 @@
 # Using the following packages
 using JuMP, GLPK
 using LinearAlgebra
+#using (SparseArrays)
 
 include("loadSPP.jl")
 include("setSPP.jl")
@@ -16,17 +17,16 @@ include("simpleDescent.jl")
 # Loading a SPP instance
 println("\nLoading...")
 #fname = "Data/didactic.dat"
-fname = "Data/pb_100rnd0100.dat"
+fname = "Data/pb_500rnd0300.dat"
 C, A = loadSPP(fname)
 
-println("\nSolving with Glouton...")
+println("\nSolving with Glouton...\n")
 Ctemp = copy(C)
 
-@time x, zOpt = glouton(Ctemp,A)
+@time x, zBest = glouton(Ctemp,A)
+println("x[i]=1 en i ∈ ", findall(x->x==1, x))
+println("z(x) = ", zBest)
 
-@show zOpt
-@show x
-#x = glouton(Ctemp,A)
 
 
 #=println("\nUsing simple descent to upgrade the solution... may take time")
@@ -36,8 +36,8 @@ xnew = simpleDescent(copy(C), copy(A), copy(x))
 println("\nUsing another simple descent to upgrade the solution")
 xnew2 = simpleDescent2(copy(C), copy(A), copy(x))
 @show xnew2
-
 =#
+
 #=
 # Test fun 
 xtest = simpleDescent(copy(C), copy(A), [0,0,1,1,0,1,0,0])
