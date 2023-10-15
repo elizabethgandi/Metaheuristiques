@@ -14,8 +14,6 @@ function glouton(C, A)
     colonnes      = Vector{Int64}(undef, n)
     constraints   = Vector{Vector{Int64}}(undef, m)
     constraintsLi = Vector{Vector{Int64}}(undef, n)
-    allSup =  zeros(Int, size(C, 1))
-    allSup2 =  zeros(Int, size(C, 1))
 
     for i in eachindex(constraints)
         constraints[i] = A[i,:]
@@ -33,76 +31,67 @@ function glouton(C, A)
     colonnes   = zeros(Int, size(C, 1))
     lignestemp = zeros(Int, size(C, 1))
 
-   # @show A
-    #@show constraints
-   # @show constraintsLi
-    #@show candidates
-
     while (size(A,1) != 0) && (size(C,1) != 0) 
 
         # Calcul la valeur de chancune des lignes de la matrice A
         sommeA = vec(sum(A, dims=2))
-       # @show sommeA
 
         # Si il n'y a qu'une seule variable dans une des lignes elle est choisie puis supprimée
         isAlone = findfirst(x->x==minimum(sommeA), sommeA)
-        #@show isAlone
-
 
         # Selection de l'indice du meilleur candidat
-        #if sommeA[isAlone] == 1 
-            #A = A[1:size(A,1) .!= isAlone,: ]
-         #   bestCandidate = isAlone
-        #else
-            bestCandidate = findfirst(x->x==maximum(candidates), candidates)
-        #end
-        #@show bestCandidate
-        
+        bestCandidate = findfirst(x->x==maximum(candidates), candidates)
 
         # Mise à jour de la base de la solution
         sol[index[bestCandidate]] = 1
-        #@show sol
 
-        #@show A
         # Mise à jour de la valeur de la fonction objective à chaque itérations
         z = z + C[bestCandidate]
-        #@show z
 
-        #@show A
         # Suppression des lignes et colonnes dans le modele
         lignestemp = findall(isequal(1), A[:,bestCandidate])
-        #lignestemp = findfirst(isequal(1), A[:,bestCandidate])
-        #@show lignestemp
 
-        # Si une ligne complete est à 0
+        # Si une ligne complete est à 0 on la supprime
         isEqualZero = findfirst(isequal(0), sommeA)
 
         if isEqualZero !== nothing && sommeA[isEqualZero] == 0
             A = A[1:size(A,1) .!= isEqualZero,: ]
         end
-        #@show isEqualZero
 
+        # Creation du tableau colonnetemp pour supprimer les colonnes qui sont à 1 lorsque seul le meilleur candidat doit etre à 1
         colonnetemp=(Int64)[]
+
+        # Permet de concatener en 1 vecteur toutes les colones qui doivent étre supprimées
         for i in lignestemp
             colonnetemp = union(colonnetemp, findall(isequal(1), A[i,:]))
         end
 
+        # On supprime dans les tableaux index et C les indices des colonnes supprimées
         index = index[setdiff(1:end, colonnetemp)]
+        C     = C[setdiff(1:end, colonnetemp)]
 
-        C = C[setdiff(1:end, colonnetemp)]
-
+        # On supprime dans la matrice A les colonnes qui doivent étre supprimées
         A = A[:, setdiff(1:end, colonnetemp)]
+
+        # On supprime dans la matrice A la colonne du meilleur candidat
         A = A[setdiff(1:end, bestCandidate), :]
         
+        # On enleve les contraintes déja satisfaite
         constraints = constraints[setdiff(1:end, lignestemp)]
-        index       = index[setdiff(1:end, bestCandidate)]
 
-        C = C[setdiff(1:end, bestCandidate)]
+        # On supprime des tableaux des index et de C celui du meilleur candidat
+        index = index[setdiff(1:end, bestCandidate)]
+        C     = C[setdiff(1:end, bestCandidate)]
+
+        # On supprime les lignes de la matrice dont les contraintes sont déja satisfaites
         A = A[setdiff(1:end, lignestemp), :]
         
-        colonnetemp = setdiff(colonnetemp,bestCandidate)
+        # On supprime dans le tableau des colonnes à supprimer celle du meilleur candidat
+        colonnetemp = setdiff(colonnetemp, bestCandidate)
        
+        # On supprime dans le tableau des candidats potentiels l'indice de celui que l'on vient de prendre
         candidates = candidates[setdiff(1:end, bestCandidate)]
+
         # Calcul de la fonction d'utilite pour la prochaine iteration
         candidates = utility(C, constraints)
      

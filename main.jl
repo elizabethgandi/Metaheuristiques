@@ -15,8 +15,8 @@ include("simpleDescent.jl")
 
 # Loading a SPP instance
 println("\nLoading...")
-#fname = "Data/didactic.dat"
-fname = "Data/pb_2000rnd0100.dat"
+fname = "Data/didactic.dat"
+#fname = "Data/pb_2000rnd0100.dat"
 C, A = loadSPP(fname)
 
 println("\nSolving with Glouton...")
