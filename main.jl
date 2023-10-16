@@ -11,14 +11,17 @@ include("setSPP.jl")
 include("getfname.jl")
 include("heuristiqueDeConstruction.jl")
 include("simpleDescent.jl")
+include("parserRAIL.jl")
 
 # =========================================================================== #
 
 # Loading a SPP instance
 println("\nLoading...")
-#fname = "Data/didactic.dat"
-fname = "Data/pb_2000rnd0100.dat"
+fname = "Data/didactic.dat"
+#fname = "Data/pb_2000rnd0100.dat"
+#fname = "Data/rail582"
 C, A = loadSPP(fname)
+#nbvar, nbcontr, A, C = loadInstanceRAIL("Data/rail582")
 
 println("\nSolving with Glouton...\n")
 Ctemp = copy(C)
