@@ -17,7 +17,7 @@ include("simpleDescent.jl")
 # Loading a SPP instance
 println("\nLoading...")
 #fname = "Data/didactic.dat"
-fname = "Data/pb_500rnd0500.dat"
+fname = "Data/pb_1000rnd0100.dat"
 C, A = loadSPP(fname)
 
 

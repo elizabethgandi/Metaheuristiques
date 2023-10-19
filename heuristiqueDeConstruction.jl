@@ -83,7 +83,6 @@ function GRASP(C::Vector{Int64}, A::Matrix{Int64})
     # Initialisation
     n::Int64               = size(A,2)       # n nombre de variables
     m::Int64               = size(A,1)       # m nombre de contraintes
-    alpha::Vector{Float64} = zeros(Int64,1)
     nbIterations::Int64    = 5               #stoppingRule
     limite::Float64        = 0
 
@@ -92,7 +91,7 @@ function GRASP(C::Vector{Int64}, A::Matrix{Int64})
     z::Int64               = 0               # z la valeur de la fonction objective
 
     bestCandidate::Int64   = 0
-    alpha                  = rand(1)         # retourne un vecteur
+    alpha                  = rand()         # retourne un vecteur
 
 
     # 0) CALCUL DES UTILITES --------------------------------------------------
@@ -113,7 +112,7 @@ function GRASP(C::Vector{Int64}, A::Matrix{Int64})
 
         # 0) MISE EN PLACE DE LA SOLUTION ALÉATOIRE ---------------------------
 
-        limite = candidates[argmin(candidates)] + reduce(vcat, alpha)*(candidates[argmax(candidates)]-candidates[argmin(candidates)])
+        limite = candidates[argmin(candidates)] + (alpha)*(candidates[argmax(candidates)]-candidates[argmin(candidates)])
         RCL = findall(x-> (x >= limite), candidates)
 
         # 1) CHOIX DU CANDIDAT A AJOUTER A LA SOLUTION COURANTE ---------------
