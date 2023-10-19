@@ -17,7 +17,7 @@ include("simpleDescent.jl")
 # Loading a SPP instance
 println("\nLoading...")
 #fname = "Data/didactic.dat"
-fname = "Data/pb_2000rnd0100.dat"
+fname = "Data/pb_500rnd0500.dat"
 C, A = loadSPP(fname)
 
 
@@ -28,6 +28,11 @@ Ctemp = copy(C)
 println("x[i]=1 en i ∈ ", findall(x->x==1, x))
 println("z(x) = ", zBest)
 
+println("\nSolving with GRASP...\n")
+
+@time x, zBest = GRASP(Ctemp, A)
+println("x[i]=1 en i ∈ ", findall(x->x==1, x))
+println("z(x) = ", zBest)
 
 
 #=println("\nUsing simple descent to upgrade the solution... may take time")
