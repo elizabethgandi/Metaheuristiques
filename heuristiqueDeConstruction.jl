@@ -1,4 +1,4 @@
-
+#test
 # Résolution SPP par algorithme glouton
 
 function glouton(C::Vector{Int64}, A::Matrix{Int64})
