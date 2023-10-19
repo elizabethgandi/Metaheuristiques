@@ -118,12 +118,12 @@ function GRASP(C::Vector{Int64}, A::Matrix{Int64})
         # 1) CHOIX DU CANDIDAT A AJOUTER A LA SOLUTION COURANTE ---------------
 
         # Selection au hazard de l'indice d'un des candidats 
-        bestCandidate = rand(1:size(RCL, 1))
+        bestCandidate = RCL[rand(1:size(RCL, 1))]
+
         # Mise à jour de la solution avec le candidat selectionne
         sol[index[bestCandidate]] = 1
         # Mise à jour de la valeur de la fonction objective avec le candidat selectionne
         z = z + C[bestCandidate]
-
 
         # 2) REDUCTION DU PROBLEME SUITE AU CANDIDAT SELECTIONNE --------------
 
@@ -153,6 +153,7 @@ function GRASP(C::Vector{Int64}, A::Matrix{Int64})
             #println("A      : ", A)
             println("U      : ", candidates)
             println("RCL    : ", RCL)
+            println("Limite : ", limite)
             println("-------- ")
         end
      
