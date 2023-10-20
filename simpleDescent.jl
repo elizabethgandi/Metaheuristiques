@@ -1,150 +1,132 @@
-using(SparseArrays)
 
-#=
-Tentative d'amélioration d'une solution par simple Descente
-2 façons différents de générer le voisinage
-simpleDescent prends a partir d'une solution met chaque variable à 1 à 0 et une variable à 0 à 1 (AddDrop)
-simpleDescent2 prends la variable presente dans le plus de contraintes et la met à 0 et essaie ensuite de mettre 2 variables à 1 aléatoirement kp(1,2)
-=#
+include("getfname.jl")
+# Ne plus utiliser les sparses Array
+# Evaluer le cout de la fonction avant même de créer le voisin
+# Evaluer l'admissibilité de la fonction avant même de créer le voisin sans tout regarder
+# Créer le voisin meilleur et recommencer la recherche sur lui avec le même Mouvement
+# Passer au mouvement suivant
 
-# Descente simple 
+# Créer un vecteur contenant les indices de 0 pour pouvoir itérer dessus
+# Même chose pour les 1
+
+# 3 voisinages
+# 1:2
+# 1:1
+# 0:1
+
+
+# Descente simple
 # A partir d'une solution met chaque variable à 1 à 0 et une variable à 0 à 1
-function simpleDescent(C, A, x) 
-    # Initialisation
-    x = sparsevec(x)
-    A = sparse(A)
-    neighbors = Vector{SparseVector{Int64,Int64}}()
+function simpleDescent(C::Vector{Int64}, A::Matrix{Int64}, x::Vector{Int64}, z::Int64) 
 
-    visited = Vector{SparseVector{Int64,Int64}}()
-    push!(visited, x)
+    # Affichage 
+    verbose::Bool = true
 
-    # Calcul voisinage N(x)
-    neighbors = neighborhood_1(x)
-    # Valeur de reference de la fonction objectif
-    val = z(C, x)
+    # Init
+    bestX               = zeros(Int64, length(C))
+    bestZ               = z
+    neighbor            = x
+    admissible::Bool    = true
+    l::Int64            = 1
 
-    # Tant qu'il reste des voisins
-    while !isempty(neighbors)
-        newx = pop!(neighbors)
-        
-        # Si le voisin est meilleur et pas déjà visité, on avance
-        if !(newx in visited) && (val <= z(C, newx))
-            if isAllowed(A, newx)
-                x = newx
-                val = z(C, x)
-                neighbors = neighborhood_1(x)
-            end
-        end
-        push!(visited, newx)
-    end
-    @show z(C,x)
-    return Array(x)
-end
+    var0::Vector{Int64} = findall(iszero, x)                # Indice des variables à 0
+    var1::Vector{Int64} = findall(!iszero, x)               # Indice des variables à 1
+    ctr::Vector{Int64}  = zeros(Int64, size(A, 1))          # Contraintes utilisées
 
-# Descente simple 2
-# prends la variable presente dans le plus de contraintes et la met à 0 et essaie ensuite de mettre 2 variables à 1 aléatoirement kp(1,2)
-function simpleDescent2(C, A, x) 
-    # Initialisation
-    x = sparsevec(x)
-    A = sparse(A)
-    neighbors = Vector{SparseVector{Int64,Int64}}()
-
-    visited = Vector{SparseVector{Int64,Int64}}()
-    push!(visited, x)
-
-    # Calcul voisinage N(x)
-    neighbors = neighborhood_2(A, x)
-    # Valeur de reference de la fonction objectif
-    val = z(C, x)
-
-    # Tant qu'il reste des voisins 
-    while !isempty(neighbors)
-        newx = pop!(neighbors)
-
-        # Si le voisin est meilleur et pas déjà visité, on avance
-        if !(newx in visited) && (val <= z(C, newx))
-            if isAllowed(A, newx)
-                x = newx
-                val = z(C, x)
-                neighbors = neighborhood_2(C,x)
-            end
-        end
-        push!(visited, newx)
-    end
-    @show z(C,x)
-    return Array(x)
-end
-
-# Retourne la valeur de la fonction objectif pour une solution x
-function z(C, x::SparseVector{Int64})
-    value = 0.0
-    for i in findall(!iszero, x)
-        value = value + C[i]
-    end
-    return value
-end
-
-# AddDrop pour chaque variable à 1 avec toutes les variables à 0
-function neighborhood_1(x::SparseVector{Int64})
-    neighbors = Vector{SparseVector{Int64}}(undef, 0)
-    # Y a t il équivalence entre findall(!iszero, x) et findnz(x) ???
-    for i in findall(!iszero, x)
-        for j in findall(iszero, x)
-            push!(neighbors, addDrop(copy(x),i,j))
+    for i in var1
+        for j in findall(!iszero, A[:,i])
+            ctr[j] = 1
         end
     end
-    return neighbors
-end
 
-# Mouvement simple : i à 0, j à 1
-function addDrop(x, i, j)
-    x[i] = 0
-    x[j] = 1
-    # on supprime les zeros stockés
-    dropzeros!(x)
-    return x
-end
+    #println("Contraintes actives :", ctr)
 
-# Mise à 0 de la variable apparaissant dans le plus de contraintes et mise à 1 de 2 autres contraintes nulles (k-p de type 1-2)
-function neighborhood_2(A::SparseMatrixCSC{Int64, Int64}, x::SparseVector{Int64})
-    coef = sum(A, dims=2)
-    max = findfirst(x->x==maximum(coef), coef)
-    return kp(copy(x), max)
-end
+    # Boucle mouvement 2:1
+    for i in var0
+        # mettre i à 1
+        for j in var0
+            # mettre j à 1
+            for z in var1
+                #mettre z à 0
+                # verif meilleur
+                if bestZ < (bestZ - C[z] + C[j] + C[i])
+                    #println("Vérification d'admissibilité !")
 
-# i à 0, 2 elts à 1, retourne un vecteur de (au plus) le nb de zero dans x solutions possibles aléatoire
-function kp(x, i)
-    neighbors = Vector{SparseVector{Int64}}(undef, 0)
-    index = findall(iszero, x)
-    x[i] = 0
-    dropzeros!(x)
-    n = max(10, length(index))
-    for j in 1:n
-        t = copy(x)
-        t[rand(index)] = 1
-        t[rand(index)] = 1
-        push!(neighbors, t)
-    end
-    return unique!(neighbors)
-end
+                    l = 1
+                    while ((l < size(A,1)) && (admissible))
+                    #for l in 1:size(A,1)
+                        # + valeur de contrainte active 
+                        # + somme des valeurs des variables mise à 1 dans cette contrainte
+                        # - somme des valeurs des variables mise à 0 dans cette contrainte
+                        # si > 1 alors + de deux variables sont actives sur la contrainte, solution non admissible
+                        if (ctr[l] + A[l,i] + A[l,j] - A[l,z]) > 1
+                            admissible = false
+                        end
+                        l = l+1
+                    end
 
+                    if admissible
+                    # vérif d'admissibilité
+                    #if isChangeAdmissible2!(A, [i,j], [z], ctr)
+                        println("Meilleur trouvé !")
+                        # Mise à jour de bestZ, var0, var1
+                        bestZ = bestZ + C[i] + C[j] - C[z]
+                        append!(var0, z)
+                        deleteat!(var0, findall(m->(m==i||m==j), var0)) #Remplace par un setdiff ?
+                        append!(var1, [i,j])
+                        deleteat!(var1, findall(m->m==z, var1))
 
-# Vérifie que base est bien admissible
-function isAllowed(A::SparseMatrixCSC{Int64, Int64}, x::SparseVector{Int64})
-    index = findall(!iszero, x)
-    constraints = Vector{Int64}(undef, 0)
-    # Pour chaque variable, regarder dans quelles contraintes elle apparait
-    for i in index
-        append!(constraints, findall(t->t==1, A[:,i]))
-    end
-    unique!(constraints)
-    # Verifie chacune des contraintes
-    for i in constraints
-        somme::Int64 = 0
-        for j in index
-            somme = somme + A[i,j]
+                        #update ctr
+
+                        # Conraintes à mettre à 0
+                        update::Vector{Int64} = findall(!iszero, A[:,z])
+                        for m in update
+                            ctr[m] = 0
+                        end
+
+                        update = findall(!iszero, A[:,z])
+                        for m in update
+                            ctr[m] = 1
+                        end
+
+                        update = findall(!iszero, A[:,z])
+                        for m in update
+                            ctr[m] = 1
+                        end
+
+                        # joli affichage
+                    end
+                    admissible = true
+                end 
+            end    
         end
-        if somme > 1
+    end
+
+    # Construction de la solution
+    for i in var1
+        bestX[i] = 1
+    end
+
+    return bestX, bestZ
+end
+
+
+# Fonction "générale" pour un k-p exchange
+# Suppose que la solution était déjà admissible avant modification
+# A matrice des contraintes
+# to1 vector de variable mise à 1
+# to0 vector de variable mise à 0
+# var1 vector de variable déjà à 1
+
+function isChangeAdmissible!(A::Matrix{Int64}, to1::Vector{Int64}, to0::Vector{Int64}, ctr::Vector{Int64})
+    # Init
+    # Vérifie que les contraintes sont respectées
+    for i in 1:size(A,1)
+        # + valeur de contrainte active (1 si contrainte déjà activé par une variable 0 sinon)
+        # + somme des valeurs des variables mise à 1 dans cette contrainte (1 si active 0 sinon pour chaque variable)
+        # - somme des valeurs des variables mise à 0 dans cette contrainte (1 si active 0 sinon pour chaque variable)
+        # si > 1 alors + de deux variables sont actives sur la contrainte, solution non admissible
+        if (ctr[i] + sum(A[i,to1[k]] for k in 1:length(to1)) - sum(A[i,to0[k]] for k in 1:length(to0))) > 1
             return false
         end
     end
