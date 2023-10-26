@@ -19,8 +19,11 @@ println("\nLoading...")
 #fname = "Data/didactic.dat"
 #fname = "Data/pb_100rnd0100.dat"
 #fname = "Data/pb_100rnd0200.dat"
-fname = "Data/pb_500rnd0500.dat"
+#fname = "Data/pb_500rnd0500.dat"
+#fname = "Data/pb_1000rnd0100.dat"
 #fname = "Data/pb_2000rnd0100.dat"
+#fname = "Data/pb_500rnd0700.dat"
+fname = "Data/pb_500rnd1500.dat"
 
 
 C, A = loadSPP(fname)
@@ -62,10 +65,7 @@ print("x = "); println(value.(spp[:x]))
 
 =#
 
-#= Test fun 
-xtest = simpleDescent(copy(C), copy(A), [0,0,1,1,0,1,0,0])
-@show xtest
-=#
+
 
 #=
 
@@ -89,7 +89,6 @@ println("\nCollecting...")
 target = "Data"
 fnames = getfname(target)
 
-
+=#
 println("\nThat's all folks !")
 
-=#
