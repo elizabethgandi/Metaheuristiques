@@ -19,9 +19,9 @@ include("HAmelioration.jl")
 # Loading a SPP instance
 println("\nLoading...")
 #fname = "Data/didactic.dat"
-#fname = "Data/pb_100rnd0100.dat"
+fname = "Data/pb_2000rnd0100.dat"
 #fname = "Data/pb_1000rnd0700.dat"
-fname = "Data/pb_500rnd1300.dat"
+#fname = "Data/pb_500rnd1300.dat"
 C, A = loadSPP(fname)
 
 # PARTIE CONSTRUCTION---------------------------------------------------------
@@ -38,7 +38,7 @@ print("\nSolving with Amelioration Glouton...")
 println("x[i]=1 en i ∈ ", findall(x->x==1, xAmelioration))
 println("z(x) = ", zAmelioration)
 
-# PARTIE METAHEURISTIQUES: GRASP----------------------------------------------
+#= PARTIE METAHEURISTIQUES: GRASP----------------------------------------------
 println("\nSolving with GRASP only...\n")
 
 nbIterations = 10
@@ -54,7 +54,7 @@ println("\nSolving with GRASP with destroy and repair...\n")
 nbIterationsDR = 10
 alphaDR        = 0.700
 
-
+=#
 
 #=
 println("\nSolving with Destroy and repear...\n")
