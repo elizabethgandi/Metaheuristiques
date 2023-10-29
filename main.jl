@@ -24,21 +24,23 @@ println("\nLoading...")
 fname = "Data/pb_500rnd1300.dat"
 C, A = loadSPP(fname)
 
-#PARTIE CONSTRUCTION-----------------------------------------------------
+# PARTIE CONSTRUCTION-----------------------------------------------------
 println("\nSolving with construction Glouton...\n")
 
 @time x, zBest = gloutonConstruction(C,A)
 println("x[i]=1 en i ∈ ", findall(x->x==1, x))
 println("z(x) = ", zBest)
 
-#PARTIE AMELIORATION: PLUS PROFONDE DESCENTE------------------------------
+# PARTIE AMELIORATION: PLUS PROFONDE DESCENTE------------------------------
 print("\nSolving with Amelioration Glouton...")
 
 @time xAmelioration, zAmelioration = gloutonAmelioration(C, A, x, zBest)
 println("x[i]=1 en i ∈ ", findall(x->x==1, xAmelioration))
 println("z(x) = ", zAmelioration)
 
-#PARTIE AMELIORATION: GRASP----------------------------------------------
+# PARTIE AMELIORATION: GRASP----------------------------------------------
+
+# PARTIE GRASP CONSTRUCTION-----------------------------------------------
 println("\nSolving with GRASP...\n")
 
 nbIterations = 3

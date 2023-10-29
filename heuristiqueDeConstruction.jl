@@ -107,6 +107,8 @@ function GRASP(C_entree::Vector{Int64}, A_entree::Matrix{Int64}, alpha, nbIterat
     z::Int64             = 0               # z la valeur de la fonction objective
 
     randomCandidate::Int64 = 0
+    zMeilleur              = 0
+    xMeilleur              = zeros(Int64,n)
 
 
     # 1) REDUCTION DE L'INSTANCE SUR VARIABLES NON CONTRAINTES ----------------
@@ -197,11 +199,24 @@ function GRASP(C_entree::Vector{Int64}, A_entree::Matrix{Int64}, alpha, nbIterat
                 println("-------- ")
             end
             nbIterations -= 1
+
         end
-        print("z = $z \n")
+
+        print("zGRASP = $z \n")
+
+        xA, zA = gloutonAmelioration(C_entree, A_entree, sol, z)
+
+        if (zA > zMeilleur)
+            zMeilleur = zA
+            xMeilleur = xA
+        end
+
+        print("zAmelioration = $zA \n")
+
     end
+
     println(" ")
-    return sol, z
+    return sol, zMeilleur
 end
 
 
