@@ -1,9 +1,7 @@
-using Random
-include("simpleDescent.jl")
+function gloutonConstruction(C_entree::Vector{Int64}, A_entree::Matrix{Int64})
 
-# Résolution SPP par algorithme glouton
-
-function glouton(C::Vector{Int64}, A::Matrix{Int64})
+    C = copy(C_entree) 
+    A = copy(A_entree) 
 
     verbose::Bool = false
 
@@ -18,7 +16,21 @@ function glouton(C::Vector{Int64}, A::Matrix{Int64})
     bestCandidate::Int64 = 0
 
 
-    # 0) CALCUL DES UTILITES --------------------------------------------------
+    # 1) REDUCTION DE L'INSTANCE SUR VARIABLES NON CONTRAINTES ----------------
+
+    # Elimine de l'instance toutes les variables concernees par aucune contrainte
+    variablesConcernees = findall(isequal(0), vec(sum(A, dims=1)))
+    for j in variablesConcernees
+        sol[j] = 1 # maj solution (partielle) en fixant a 1 la variable non contrainte
+        z = z + C[j] # maj valeur de la solution (partielle)
+    end
+
+    # supprime les colonnes correspondant aux variables fixees
+    index = index[setdiff(1:end, variablesConcernees)]
+    C = C[setdiff(1:end, variablesConcernees)]
+    A = A[:, setdiff(1:end, variablesConcernees)]
+
+    # 2) CALCUL DES UTILITES --------------------------------------------------
 
     candidates::Vector{Float64} = C ./ vec(sum(A, dims = 1))
 
@@ -33,8 +45,7 @@ function glouton(C::Vector{Int64}, A::Matrix{Int64})
 
     while (size(A,1) != 0) && (size(C,1) != 0) 
 
-
-        # 1) CHOIX DU CANDIDAT A AJOUTER A LA SOLUTION COURANTE ---------------
+        # 3) CHOIX DU CANDIDAT A AJOUTER A LA SOLUTION COURANTE ---------------
 
         # Selection de l'indice du meilleur candidat au regard de son utilite
         bestCandidate = argmax(candidates)
@@ -44,7 +55,7 @@ function glouton(C::Vector{Int64}, A::Matrix{Int64})
         z = z + C[bestCandidate]
 
 
-        # 2) REDUCTION DU PROBLEME SUITE AU CANDIDAT SELECTIONNE --------------
+        # 4) REDUCTION DU PROBLEME SUITE AU CANDIDAT SELECTIONNE --------------
 
         # Identification des contraintes a supprimer du fait de la variable selectionnee
         lignestemp = findall(isequal(1), A[:,bestCandidate])
@@ -77,6 +88,7 @@ function glouton(C::Vector{Int64}, A::Matrix{Int64})
     end
     return sol, z
 end
+
 
 function GRASP(C::Vector{Int64}, A::Matrix{Int64})
 
