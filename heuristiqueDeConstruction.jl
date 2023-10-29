@@ -90,25 +90,40 @@ function gloutonConstruction(C_entree::Vector{Int64}, A_entree::Matrix{Int64})
 end
 
 
-function GRASP(C::Vector{Int64}, A::Matrix{Int64})
+
+function GRASP(C_entree::Vector{Int64}, A_entree::Matrix{Int64}, alpha, nbIterations)
+
+    C = copy(C_entree) 
+    A = copy(A_entree) 
 
     verbose::Bool = false
 
     # Initialisation
-    n::Int64               = size(A,2)       # n nombre de variables
-    m::Int64               = size(A,1)       # m nombre de contraintes
-    nbIterations::Int64    = 5               #stoppingRule
-    limite::Float64        = 0
+    n::Int64             = size(A,2)       # n nombre de variables
+    m::Int64             = size(A,1)       # m nombre de contraintes
 
-    index::Vector{Int64}   = collect(1:n)    # Index d'origines des variables
-    sol::Vector{Int64}     = zeros(Int64,n)  # Vecteur de base de la solution
-    z::Int64               = 0               # z la valeur de la fonction objective
+    index::Vector{Int64} = collect(1:n)    # Index d'origines des variables
+    sol::Vector{Int64}   = zeros(Int64,n)  # Vecteur de base de la solution
+    z::Int64             = 0               # z la valeur de la fonction objective
 
-    bestCandidate::Int64   = 0
-    alpha                  = rand()         # retourne un vecteur
+    randomCandidate::Int64 = 0
 
 
-    # 0) CALCUL DES UTILITES --------------------------------------------------
+    # 1) REDUCTION DE L'INSTANCE SUR VARIABLES NON CONTRAINTES ----------------
+
+    # Elimine de l'instance toutes les variables concernees par aucune contrainte
+    variablesConcernees = findall(isequal(0), vec(sum(A, dims=1)))
+    for j in variablesConcernees
+        sol[j] = 1 # maj solution (partielle) en fixant a 1 la variable non contrainte
+        z = z + C[j] # maj valeur de la solution (partielle)
+    end
+
+    # supprime les colonnes correspondant aux variables fixees
+    index = index[setdiff(1:end, variablesConcernees)]
+    C = C[setdiff(1:end, variablesConcernees)]
+    A = A[:, setdiff(1:end, variablesConcernees)]
+
+    # 2) CALCUL DES UTILITES --------------------------------------------------
 
     candidates::Vector{Float64} = C ./ vec(sum(A, dims = 1))
 
@@ -117,65 +132,79 @@ function GRASP(C::Vector{Int64}, A::Matrix{Int64})
         #println("C      : ", C)
         #println("A      : ", A)
         println("U      : ", candidates)
-        println("a      : ", alpha)
         println(" ")
     end
-    
 
-    while (size(A,1) != 0) && (size(C,1) != 0) 
+    Ccopy          = copy(C)
+    Acopy          = copy(A)
+    candidatesCopy = copy(candidates)
+    indexCopy      = copy(index)
+    zCopy          = z
+    solCopy        = copy(sol)
 
-        # 0) MISE EN PLACE DE LA SOLUTION ALÉATOIRE ---------------------------
+    for i in 1:nbIterations
+        print("\nItération n° $i: ")
 
-        limite = candidates[argmin(candidates)] + (alpha)*(candidates[argmax(candidates)]-candidates[argmin(candidates)])
-        RCL = findall(x-> (x >= limite), candidates)
+        C          = copy(Ccopy) 
+        A          = copy(Acopy) 
+        candidates = copy(candidatesCopy)
+        index      = copy(indexCopy)
+        z          = zCopy
+        sol        = copy(solCopy)
 
-        # 1) CHOIX DU CANDIDAT A AJOUTER A LA SOLUTION COURANTE ---------------
+        while (size(A,1) != 0) && (size(C,1) != 0) 
 
-        # Selection au hazard de l'indice d'un des candidats 
-        bestCandidate = RCL[rand(1:size(RCL, 1))]
+            limite = candidates[argmin(candidates)] + (alpha)*(candidates[argmax(candidates)]-candidates[argmin(candidates)])
+            RCL = findall(x-> (x >= limite), candidates)
 
-        # Mise à jour de la solution avec le candidat selectionne
-        sol[index[bestCandidate]] = 1
-        # Mise à jour de la valeur de la fonction objective avec le candidat selectionne
-        z = z + C[bestCandidate]
+            # 3) CHOIX DU CANDIDAT A AJOUTER A LA SOLUTION COURANTE ---------------
 
-        # 2) REDUCTION DU PROBLEME SUITE AU CANDIDAT SELECTIONNE --------------
+            # Selection au hazard de l'indice d'un des candidats 
+            randomCandidate = RCL[rand(1:size(RCL, 1))]
 
-        # Identification des contraintes a supprimer du fait de la variable selectionnee
-        lignestemp = findall(isequal(1), A[:,bestCandidate])
+            # Mise à jour de la solution avec le candidat selectionne
+            sol[index[randomCandidate]] = 1
+            # Mise à jour de la valeur de la fonction objective avec le candidat selectionne
+            z = z + C[randomCandidate]
 
-        # Identifie toutes les colonnes qui doivent etre supprimées suite au candidat selectionne
-        colonnetemp=(Int64)[]
-        for i in lignestemp
-            # scrute contrainte par contrainte les coefficients de A de valeur 1 (et elimine les eventuels doublons)
-            colonnetemp = union(colonnetemp, findall(isequal(1), A[i,:]))
-        end
+            # 4) REDUCTION DU PROBLEME SUITE AU CANDIDAT SELECTIONNE --------------
 
-        # On supprime dans les structures index, A et C les valeurs correspondantes aux colonnes supprimées
-        index      = index[setdiff(1:end, colonnetemp)]      # reduction du vecteur des indices des variables
-        A          = A[:, setdiff(1:end, colonnetemp)]       # reduction des colonnes de la matrice des contraines
-        C          = C[setdiff(1:end, colonnetemp)]          # reduction du vecteur de coefficients de la fonction objectif
-        candidates = candidates[setdiff(1:end, colonnetemp)] # reduction du vecteur des utilites
+            # Identification des contraintes a supprimer du fait de la variable selectionnee
+            lignestemp = findall(isequal(1), A[:,randomCandidate])
 
-        # On supprime dans la matrice A les lignes correspondantes aux contraintes impliquees par la variable selectionnee
-        A          = A[setdiff(1:end, lignestemp), :]        # reduction des lignes de la matrice des contraines
+            # identifie toutes les colonnes qui doivent etre supprimées suite au candidat selectionne
+            colonnetemp=(Int64)[]
+            for i in lignestemp
+                # scrute contrainte par contrainte les coefficients de A de valeur 1 (et elimine les eventuels doublons)
+                colonnetemp = union(colonnetemp, findall(isequal(1), A[i,:]))
+            end
+
+            # On supprime dans les structures index, A et C les valeurs correspondantes aux colonnes supprimées
+            index      = index[setdiff(1:end, colonnetemp)]      # reduction du vecteur des indices des variables
+            A          = A[:, setdiff(1:end, colonnetemp)]       # reduction des colonnes de la matrice des contraines
+            C          = C[setdiff(1:end, colonnetemp)]          # reduction du vecteur de coefficients de la fonction objectif
+            candidates = candidates[setdiff(1:end, colonnetemp)] # reduction du vecteur des utilites
+
+            # On supprime dans la matrice A les lignes correspondantes aux contraintes impliquees par la variable selectionnee
+            A          = A[setdiff(1:end, lignestemp), :]        # reduction des lignes de la matrice des contraines
         
-        if verbose
-            println("jselec : ", bestCandidate)
-            println("ivar   : ", index)
-            #println("C      : ", C)
-            #println("A      : ", A)
-            println("U      : ", candidates)
-            println("RCL    : ", RCL)
-            println("Limite : ", limite)
-            println("-------- ")
+            if verbose
+                println("jselec : ", randomCandidate)
+                println("ivar   : ", index)
+                #println("C      : ", C)
+                #println("A      : ", A)
+                println("U      : ", candidates)
+                println("-------- ")
+            end
+            nbIterations -= 1
         end
-     
-
+        print("z = $z \n")
     end
+    println(" ")
     return sol, z
-
 end
+
+
 
 function destroyAndRepear(C, A) # appel apres l'amelioration
 

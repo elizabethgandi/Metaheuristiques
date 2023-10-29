@@ -19,30 +19,36 @@ include("HAmelioration.jl")
 # Loading a SPP instance
 println("\nLoading...")
 #fname = "Data/didactic.dat"
-#fname = "Data/pb_100rnd0500.dat"
-#fname = "Data/pb_500rnd1300.dat"
-fname = "Data/pb_1000rnd0700.dat"
+#fname = "Data/pb_100rnd0100.dat"
+#fname = "Data/pb_1000rnd0700.dat"
+fname = "Data/pb_500rnd1300.dat"
 C, A = loadSPP(fname)
 
 #PARTIE CONSTRUCTION-----------------------------------------------------
-println("\nSolving with Glouton...\n")
-Ctemp = copy(C)
+println("\nSolving with construction Glouton...\n")
 
-@time x, zBest = gloutonConstruction(Ctemp,A)
+@time x, zBest = gloutonConstruction(C,A)
 println("x[i]=1 en i ∈ ", findall(x->x==1, x))
 println("z(x) = ", zBest)
 
 #PARTIE AMELIORATION: PLUS PROFONDE DESCENTE------------------------------
-#gloutonAmelioration(C, A, x, zBest)
+print("\nSolving with Amelioration Glouton...")
 
+@time xAmelioration, zAmelioration = gloutonAmelioration(C, A, x, zBest)
+println("x[i]=1 en i ∈ ", findall(x->x==1, xAmelioration))
+println("z(x) = ", zAmelioration)
 
-#=
+#PARTIE AMELIORATION: GRASP----------------------------------------------
 println("\nSolving with GRASP...\n")
 
-@time x, zBest = GRASP(Ctemp, A)
-println("x[i]=1 en i ∈ ", findall(x->x==1, x))
-println("z(x) = ", zBest2)
+nbIterations = 3
+alpha        = 0.700
 
+@time xGRASP, zGRASP = GRASP(C, A, alpha, nbIterations)
+println("x[i]=1 en i ∈ ", findall(x->x==1, xGRASP))
+println("z(x) = ", zGRASP)
+
+#=
 pprintln("\nSolving with Destroy and repear...\n")
 
 x, zBest = destroyAndRepear(Ctemp, A)
