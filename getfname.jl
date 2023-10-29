@@ -8,7 +8,7 @@ function getfname(target)
     cd(joinpath(pwd(),target))
 
     # retourne le repertoire courant
-    println("pwd = ", pwd())
+    #println("pwd = ", pwd())
 
     # recupere tous les fichiers se trouvant dans le repertoire indique
     allfiles = readdir()
@@ -21,7 +21,7 @@ function getfname(target)
         # traite chaque fichier du repertoire
         if f[1] != '.'
             # pas un fichier cache => conserver
-            println("fname = ", f)
+            #println("fname = ", f)
         else
             # fichier cache => supprimer
             flag[k] = false
