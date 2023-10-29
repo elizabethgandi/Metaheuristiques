@@ -32,8 +32,8 @@ function simpleDescent(C::Vector{Int64}, A::Matrix{Int64}, x::Vector{Int64}, z::
     # Voisinage avec mouvement de 2:1 exchange
     for i in var0
         for j in var0
-            for z in var1
-                if j>i  # permet d'éviter les doublons (i,j) et (j,i) et les (i,i)
+            if j>i # permet d'éviter les doublons (i,j) et (j,i) et les (i,i)
+                for z in var1
                     if bestZ < (bestZ - C[z] + C[j] + C[i])
 
                         # Vérification d'admissibilié de la solution
@@ -66,13 +66,13 @@ function simpleDescent(C::Vector{Int64}, A::Matrix{Int64}, x::Vector{Int64}, z::
                                 ctr[m] = 0
                             end
 
-                            # Contraintes occupée par i sont ajoutées
+                            # Contraintes occupées par i sont ajoutées
                             update = findall(!iszero, A[:,i])
                             for m in update
                                 ctr[m] = 1
                             end
 
-                            # Contraintes occupée par j sont ajoutées
+                            # Contraintes occupées par j sont ajoutées
                             update = findall(!iszero, A[:,j])
                             for m in update
                                 ctr[m] = 1
@@ -84,6 +84,97 @@ function simpleDescent(C::Vector{Int64}, A::Matrix{Int64}, x::Vector{Int64}, z::
                 end 
             end    
         end
+    end
+
+    if verbose
+        println("\nN with 1:1 exchange (# number of upgrade):")
+    end
+
+    # Voisinage avec mouvement de 1:1 exchange
+    for i in var0
+        for z in var1
+            if bestZ < (bestZ - C[z] + C[i])
+                # Vérification d'admissibilié de la solution
+                l = 1
+                while ((l <= size(A,1)) && (admissible))
+                    if (ctr[l] + A[l,i] - A[l,z]) > 1
+                        admissible = false
+                    end
+                    l = l+1
+                end
+
+                if admissible # si admissible
+
+                    if verbose 
+                        print("#")
+                    end
+
+                    # Mise à jour de bestZ, var0, var1
+                    bestZ = bestZ + C[i] - C[z]
+                    append!(var0, z)
+                    deleteat!(var0, findall(m->(m==i), var0))
+                    append!(var1, i)
+                    deleteat!(var1, findall(m->m==z, var1))
+
+                    #update ctr
+
+                    # Contraintes occupée par z sont libérées
+                    update = findall(!iszero, A[:,z])
+                    for m in update
+                        ctr[m] = 0
+                    end
+
+                   # Contraintes occupées par i sont ajoutées
+                    update = findall(!iszero, A[:,i])
+                    for m in update
+                        ctr[m] = 1
+                    end
+                end
+
+                admissible = true
+            end 
+        end    
+    end
+
+
+    if verbose
+        println("\nN with 0:1 exchange (# number of upgrade):")
+    end
+
+    # Voisinage avec mouvement de 0:1 exchange
+    for i in var0
+         if bestZ < (bestZ + C[i])
+            # Vérification d'admissibilié de la solution
+            l = 1
+            while ((l <= size(A,1)) && (admissible))
+                if (ctr[l] + A[l,i]) > 1
+                    admissible = false
+                end
+                l = l+1
+            end
+
+            if admissible # si admissible
+
+                if verbose 
+                    print("#")
+                end
+
+                # Mise à jour de bestZ, var0, var1
+                bestZ = bestZ + C[i]
+                append!(var1, i)
+                deleteat!(var0, findall(m->m==i, var0))
+
+                #update ctr
+
+                # Contraintes occupées par i sont ajoutées
+                update = findall(!iszero, A[:,i])
+                for m in update
+                    ctr[m] = 1
+                end
+            end
+
+            admissible = true 
+        end    
     end
 
     # Solution améliorée

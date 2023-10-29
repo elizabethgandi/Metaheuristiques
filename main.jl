@@ -19,11 +19,11 @@ println("\nLoading...")
 #fname = "Data/didactic.dat"
 #fname = "Data/pb_100rnd0100.dat"
 #fname = "Data/pb_100rnd0200.dat"
-#fname = "Data/pb_500rnd0500.dat"
+fname = "Data/pb_500rnd0500.dat"
 #fname = "Data/pb_1000rnd0100.dat"
 #fname = "Data/pb_2000rnd0100.dat"
 #fname = "Data/pb_500rnd0700.dat"
-fname = "Data/pb_500rnd1500.dat"
+#fname = "Data/pb_500rnd1500.dat"
 
 
 C, A = loadSPP(fname)
