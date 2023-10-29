@@ -28,19 +28,24 @@ Ctemp = copy(C)
 println("x[i]=1 en i ∈ ", findall(x->x==1, x))
 println("z(x) = ", zBest1)
 
+
+
+
+
+#=
 println("\nSolving with GRASP...\n")
 
 @time x, zBest = GRASP(Ctemp, A)
 println("x[i]=1 en i ∈ ", findall(x->x==1, x))
 println("z(x) = ", zBest2)
 
-println("\nSolving with Destroy and repear...\n")
+pprintln("\nSolving with Destroy and repear...\n")
 
 x, zBest = destroyAndRepear(Ctemp, A)
 println("x[i]=1 en i ∈ ", findall(x->x==1, x))
 println("z(x) = ", zBest3)
 
-#=println("\nUsing simple descent to upgrade the solution... may take time")
+rintln("\nUsing simple descent to upgrade the solution... may take time")
 xnew = simpleDescent(copy(C), copy(A), copy(x))
 @show xnew
 
