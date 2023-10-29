@@ -11,77 +11,10 @@ include("setSPP.jl")
 include("getfname.jl")
 include("heuristiqueDeConstruction.jl")
 include("simpleDescent.jl")
+include("latexTable.jl")
 
 # =========================================================================== #
 
-# Loading a SPP instance
-println("\nLoading...")
-#fname = "Data/didactic.dat"
-#fname = "Data/pb_100rnd0100.dat"
-#fname = "Data/pb_100rnd0200.dat"
-fname = "Data/pb_500rnd0500.dat"
-#fname = "Data/pb_1000rnd0100.dat"
-#fname = "Data/pb_2000rnd0100.dat"
-#fname = "Data/pb_500rnd0700.dat"
-#fname = "Data/pb_500rnd1500.dat"
-
-
-C, A = loadSPP(fname)
-
-#=
-C = [1, 1, 1, 5]
-A = [ 1 0 0 1;
-      0 1 0 0;
-      0 0 1 0;
-      0 0 0 1]
-=#
-
-println("\nSolving with Glouton...\n")
-Ctemp = copy(C)
-
-@time x, zBest = glouton(Ctemp,A)
-println("x[i]=1 en i ∈ ", findall(x->x==1, x))
-println("z(x) = ", zBest)
-
-println("\nImproving the solution with a simple descent...\n")
-@time x, zBest = simpleDescent(C,A,x,zBest)
-println("x[i]=1 en i ∈ ", findall(x->x==1, x))
-println("z(x) = ", zBest)
-
-
-#=
-
-#Solving a SPP instance with GLPK
-println("\nSolving with GLPK...")
-solverSelected = GLPK.Optimizer
-spp = setSPP(C, A)
-
-set_optimizer(spp, solverSelected)
-@time optimize!(spp)
-
-# Displaying the results
-println("z = ", objective_value(spp))
-print("x = "); println(value.(spp[:x]))
-
-=#
-
-
-
-#=
-
-# Solving a SPP instance with GLPK
-println("\nSolving with GLPK...")
-solverSelected = GLPK.Optimizer
-spp = setSPP(C, A)
-
-set_optimizer(spp, solverSelected)
-optimize!(spp)
-
-=#
-
-# =========================================================================== 
-
-#=
 
 #Collecting the names of instances to solve
 
@@ -89,6 +22,68 @@ println("\nCollecting...")
 target = "Data"
 fnames = getfname(target)
 
-=#
+
+gl_times    = Vector{Float64}(undef, length(fnames))
+gl_results  = Vector{Int64}(undef, length(fnames))
+ds_times    = Vector{Float64}(undef, length(fnames))
+ds_results  = Vector{Int64}(undef, length(fnames))
+cpt         = 1
+
+
+for fname in fnames
+
+      global cpt
+
+      # Loading a SPP instance
+      println("\nLoading " * fname * "..." )
+
+      C, A = loadSPP("Data/" * fname)
+
+      # Solving with glouton algorithm
+      println("\nSolving with Glouton...\n")
+      
+      Ctemp = copy(C)
+
+      gl_times[cpt] = @elapsed @time x, zBest = glouton(Ctemp,A)
+      gl_results[cpt] = zBest
+
+      println("x[i]=1 en i ∈ ", findall(x->x==1, x))
+      println("z(x) = ", zBest)
+
+      println("\nImproving the solution with a simple descent...\n")
+
+      ds_times[cpt] = @elapsed @time x, zBest = simpleDescent(C,A,x,zBest)
+      ds_results[cpt] = zBest 
+
+      println("x[i]=1 en i ∈ ", findall(x->x==1, x))
+      println("z(x) = ", zBest)
+
+      cpt = cpt + 1
+      
+      #=
+
+      #Solving a SPP instance with GLPK
+      println("\nSolving with GLPK...")
+      solverSelected = GLPK.Optimizer
+      spp = setSPP(C, A)
+
+      set_optimizer(spp, solverSelected)
+      @time optimize!(spp)
+
+      # Displaying the results
+      println("z = ", objective_value(spp))
+      print("x = "); println(value.(spp[:x]))
+
+      =#
+
+end 
+
+println("\n Bilan :")
+
+dm1_latexTable(fnames, gl_times, gl_results, ds_times, ds_results) |> print
+
+
+# =========================================================================== 
+
 println("\nThat's all folks !")
 
