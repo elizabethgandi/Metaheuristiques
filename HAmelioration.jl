@@ -10,7 +10,7 @@ function gloutonAmelioration(C, A, xConstruction, zConstruction)
     v2 = 0
     v3                  = 0
     ameliorer           = true
-    verbose             = true
+    verbose             = false
 
     contraintesSaturees = zeros(Int64, size(A,1)) #RHS
     for i in tabDesIndicesVariablesAUn
@@ -33,7 +33,9 @@ function gloutonAmelioration(C, A, xConstruction, zConstruction)
                         if (zCourant-C[i]-C[j]+C[k] > zMeilleur)
                             #Remplissage a la main des contraintes saturees ET verification d'admissibilite
                             if ((findfirst(x->x>1,contraintesSaturees - A[:,i] - A[:,j] + A[:,k])) == nothing)
-                                print("x")
+                                if (verbose) 
+                                    print("x") 
+                                end
                                 #v10A
                                 v1 = i
                                 #v10b
@@ -92,7 +94,9 @@ function gloutonAmelioration(C, A, xConstruction, zConstruction)
                 if (zCourant-C[i]+C[k] > zMeilleur)
                     #Remplissage a la main des contraintes saturees ET verification d'admissibilite
                     if ((findfirst(x->x>1,contraintesSaturees - A[:,i] + A[:,k])) == nothing) 
-                        print("x")
+                        if (verbose) 
+                            print("x") 
+                        end
                         #v10
                         v1 = i
                         #v01
@@ -141,7 +145,9 @@ function gloutonAmelioration(C, A, xConstruction, zConstruction)
             if (zCourant+C[k] > zMeilleur)
                 #Remplissage a la main des contraintes saturees ET verification d'admissibilite
                 if ((findfirst(x->x>1,contraintesSaturees  + A[:,k])) == nothing) 
-                    print("x")
+                    if (verbose) 
+                        print("x") 
+                    end
                     #v01
                     v3 = k
                     #nouvelle valeur de z
