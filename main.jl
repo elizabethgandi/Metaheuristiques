@@ -10,35 +10,19 @@ using Random
 using Printf
 
 include("loadSPP.jl")
-#include("setSPP.jl")
+#include("setSPP.jl") car jump et glpk en commentaires
 include("getfname.jl")
-
 include("construction.jl")
 include("destruction.jl")
 include("amelioration.jl")
 include("grasp.jl")
 include("reconstruction.jl")
 include("simpleDescent.jl")
-include("latexTable.jl")
+#include("latexTable.jl")
 
 #Random.seed!(100)
 
 # =========================================================================== #
-#=
-function main()
-      Collecting the names of instances to solve
-
-      println("\nCollecting...")
-      target = "Data"
-      fnames = getfname(target)
-
-
-      gl_times    = Vector{Float64}(undef, length(fnames))
-      gl_results  = Vector{Int64}(undef, length(fnames))
-      ds_times    = Vector{Float64}(undef, length(fnames))
-      ds_results  = Vector{Int64}(undef, length(fnames))
-      cpt         = 1
-  =#
 
 function resolution(fnames)
 
@@ -65,26 +49,6 @@ function resolution(fnames)
         tAmelioration                = time()-start
         @printf("z(xBest) = %d | t = %f sec \n",zAmelioration, tAmelioration)
 
-     #= for fname in fnames
-
-            # Loading a SPP instance
-            println("\nLoading " * fname * "..." )
-
-            C, A = loadSPP("Data/" * fname)
-
-            # Solving with glouton algorithm
-            println("\nSolving with Glouton...\n")
-            
-            Ctemp = copy(C)
-
-            gl_times[cpt] = @elapsed @time x, zBest = glouton(Ctemp,A)
-            gl_results[cpt] = zBest
-=#
-
-            println("x[i]=1 en i ∈ ", findall(x->x==1, x))
-            println("z(x) = ", zBest)
-
-
         # DM2 =====================================================================
 
         println("\nDM2 ----------------------------------------------------------------")
@@ -96,21 +60,7 @@ function resolution(fnames)
         xbest, zbest = GRASP(C, A, alpha, nbIterationGrasp)
         tgraspSPP    = time()-start
         @printf("\nzBestGrasp   = %d ", zbest)
-        println("t GRASP    : ", trunc(tgraspSPP, digits=3), "sec")
-#=
-            println("\nImproving the solution with a simple descent...\n")
-
-            ds_times[cpt] = @elapsed @time x, zBest = simpleDescent(C,A,x,zBest)
-            ds_results[cpt] = zBest 
-
-            println("x[i]=1 en i ∈ ", findall(x->x==1, x))
-            println("z(x) = ", zBest)
-    =#
-
-
-            cpt = cpt + 1
-            
-            #=
+        println("t GRASP    : ", trunc(tgraspSPP, digits=3), "sec")  
 
         start          = time()
         xfinal, zfinal = grasp_DR(C, A, alpha, nbIterationGrasp, nbIterationDR)
@@ -137,12 +87,12 @@ target = "Data"            # chemin vers le repertoire des instances
 
 # experimente une instance :
 #fnames = ["didactic.dat"]
-#fnames = ["pb_100rnd0300.dat"]
+fnames = ["pb_100rnd0500.dat"]
 #fnames = ["pb_200rnd0900.dat"]
 #fnames = ["pb_2000rnd0100.dat"]
 #fnames = ["pb_500rnd0100.dat"]
 #fnames = ["pb_500rnd0300.dat"]
-fnames = ["pb_2000rnd0100.dat"]
+#fnames = ["pb_2000rnd0100.dat"]
 
 # experimente toutes les instances :
 #fnames = getfname(target)
@@ -176,12 +126,52 @@ end
 println("Nb instances : ", length(resultats), " | C+A : ", nCA, " | GRASP : ", nGRASP, " | DR : ", nDR)
 
 println("that's all folk")
-#=
-            # Displaying the results
-            println("z = ", objective_value(spp))
-            print("x = "); println(value.(spp[:x]))
 
-            =#
+#=      function main()
+        Collecting the names of instances to solve
+
+        println("\nCollecting...")
+        target = "Data"
+        fnames = getfname(target)
+
+        gl_times    = Vector{Float64}(undef, length(fnames))
+        gl_results  = Vector{Int64}(undef, length(fnames))
+        ds_times    = Vector{Float64}(undef, length(fnames))
+        ds_results  = Vector{Int64}(undef, length(fnames))
+        cpt         = 1
+     
+        for fname in fnames
+        # Loading a SPP instance
+        println("\nLoading " * fname * "..." )
+
+        C, A = loadSPP("Data/" * fname)
+
+        # Solving with glouton algorithm
+        println("\nSolving with Glouton...\n")
+            
+        Ctemp = copy(C)
+
+        gl_times[cpt] = @elapsed @time x, zBest = glouton(Ctemp,A)
+        gl_results[cpt] = zBest
+
+        println("x[i]=1 en i ∈ ", findall(x->x==1, x))
+        println("z(x) = ", zBest)
+
+        println("\nImproving the solution with a simple descent...\n")
+
+        ds_times[cpt] = @elapsed @time x, zBest = simpleDescent(C,A,x,zBest)
+        ds_results[cpt] = zBest 
+
+        println("x[i]=1 en i ∈ ", findall(x->x==1, x))
+        println("z(x) = ", zBest)
+   
+        cpt = cpt + 1    
+ 
+        # Displaying the results
+        println("z = ", objective_value(spp))
+        print("x = "); println(value.(spp[:x]))
+
+            
 
       end 
 
