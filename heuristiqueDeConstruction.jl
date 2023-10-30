@@ -91,36 +91,38 @@ end
 
 
 
-function GRASP(C_entree::Vector{Int64}, A_entree::Matrix{Int64}, alpha, nbIterations)
+function GRASP(C_entree::Vector{Int64}, A_entree::Matrix{Int64}, alpha::Float64, nbIterations::Int64)
 
     C = copy(C_entree) 
     A = copy(A_entree) 
 
     verbose::Bool = false
 
-    # Initialisation
-    n::Int64             = size(A,2)       # n nombre de variables
-    m::Int64             = size(A,1)       # m nombre de contraintes
+    # Initialisation ----------------------------------------------------------
+    n::Int64               = size(A,2)       # n nombre de variables
+    m::Int64               = size(A,1)       # m nombre de contraintes
 
-    index::Vector{Int64} = collect(1:n)    # Index d'origines des variables
-    sol::Vector{Int64}   = zeros(Int64,n)  # Vecteur de base de la solution
-    z::Int64             = 0               # z la valeur de la fonction objective
+    index::Vector{Int64}   = collect(1:n)    # Index d'origines des variables
+    sol::Vector{Int64}     = zeros(Int64,n)  # Vecteur de base de la solution
+    z::Int64               = 0               # z la valeur de la fonction objective
 
     randomCandidate::Int64 = 0
     zMeilleur              = 0
     xMeilleur              = zeros(Int64,n)
 
 
+    # Partie GRASP construction -----------------------------------------------
+
     # 1) REDUCTION DE L'INSTANCE SUR VARIABLES NON CONTRAINTES ----------------
 
     # Elimine de l'instance toutes les variables concernees par aucune contrainte
     variablesConcernees = findall(isequal(0), vec(sum(A, dims=1)))
     for j in variablesConcernees
-        sol[j] = 1 # maj solution (partielle) en fixant a 1 la variable non contrainte
-        z = z + C[j] # maj valeur de la solution (partielle)
+        sol[j] = 1      # maj solution (partielle) en fixant a 1 la variable non contrainte
+        z = z + C[j]    # maj valeur de la solution (partielle)
     end
 
-    # supprime les colonnes correspondant aux variables fixees
+    # Supprime les colonnes correspondant aux variables fixees
     index = index[setdiff(1:end, variablesConcernees)]
     C = C[setdiff(1:end, variablesConcernees)]
     A = A[:, setdiff(1:end, variablesConcernees)]
@@ -156,10 +158,12 @@ function GRASP(C_entree::Vector{Int64}, A_entree::Matrix{Int64}, alpha, nbIterat
 
         while (size(A,1) != 0) && (size(C,1) != 0) 
 
-            limite = candidates[argmin(candidates)] + (alpha)*(candidates[argmax(candidates)]-candidates[argmin(candidates)])
-            RCL = findall(x-> (x >= limite), candidates)
+            print("x")
 
-            # 3) CHOIX DU CANDIDAT A AJOUTER A LA SOLUTION COURANTE ---------------
+            limite = candidates[argmin(candidates)] + (alpha)*(candidates[argmax(candidates)]-candidates[argmin(candidates)])
+            RCL    = findall(x-> (x >= limite), candidates)
+
+            # 3) CHOIX DU CANDIDAT A AJOUTER A LA SOLUTION COURANTE -----------
 
             # Selection au hazard de l'indice d'un des candidats 
             randomCandidate = RCL[rand(1:size(RCL, 1))]
@@ -169,7 +173,7 @@ function GRASP(C_entree::Vector{Int64}, A_entree::Matrix{Int64}, alpha, nbIterat
             # Mise à jour de la valeur de la fonction objective avec le candidat selectionne
             z = z + C[randomCandidate]
 
-            # 4) REDUCTION DU PROBLEME SUITE AU CANDIDAT SELECTIONNE --------------
+            # 4) REDUCTION DU PROBLEME SUITE AU CANDIDAT SELECTIONNE ----------
 
             # Identification des contraintes a supprimer du fait de la variable selectionnee
             lignestemp = findall(isequal(1), A[:,randomCandidate])
@@ -202,7 +206,11 @@ function GRASP(C_entree::Vector{Int64}, A_entree::Matrix{Int64}, alpha, nbIterat
 
         end
 
-        print("zGRASP = $z \n")
+        if(verbose)
+            print("zGRASP = $z \n")
+        end
+
+        # Partie GRASP amélioration -------------------------------------------
 
         xA, zA = gloutonAmelioration(C_entree, A_entree, sol, z)
 
@@ -211,16 +219,20 @@ function GRASP(C_entree::Vector{Int64}, A_entree::Matrix{Int64}, alpha, nbIterat
             xMeilleur = xA
         end
 
-        print("zAmelioration = $zA \n")
+        if(verbose)
+            print("zAmelioration = $zA \n")
+        end
 
     end
 
-    println(" ")
+    if(verbose)
+        println(" ")
+    end
     return sol, zMeilleur
 end
 
 
-
+#PARTIE DESTROY AND REAPIR EN COURS!!!!!!!!!!--------------------------------------------------------------------------------------
 function destroyAndRepear(C, A) # appel apres l'amelioration
 
     #INITIALISATION -------------------------------------------

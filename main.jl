@@ -18,11 +18,15 @@ include("HAmelioration.jl")
 
 # Loading a SPP instance
 println("\nLoading...")
-#fname = "Data/didactic.dat"
-fname = "Data/pb_2000rnd0100.dat"
+fname = "Data/didactic.dat"
+#fname = "Data/pb_2000rnd0100.dat"
 #fname = "Data/pb_1000rnd0700.dat"
 #fname = "Data/pb_500rnd1300.dat"
 C, A = loadSPP(fname)
+
+# ============================================================================
+#PARTIE DM1===================================================================
+println("\nDM1...\n")
 
 # PARTIE CONSTRUCTION---------------------------------------------------------
 println("\nSolving with construction Glouton...\n")
@@ -38,7 +42,13 @@ print("\nSolving with Amelioration Glouton...")
 println("x[i]=1 en i ∈ ", findall(x->x==1, xAmelioration))
 println("z(x) = ", zAmelioration)
 
-#= PARTIE METAHEURISTIQUES: GRASP----------------------------------------------
+# ============================================================================
+# ============================================================================
+
+#PARTIE DM2===================================================================
+println("\nDM2...\n")
+
+#PARTIE METAHEURISTIQUES: GRASP----------------------------------------------
 println("\nSolving with GRASP only...\n")
 
 nbIterations = 10
@@ -48,6 +58,7 @@ alpha        = 0.700
 println("x[i]=1 en i ∈ ", findall(x->x==1, xGRASP))
 println("z(x) = ", zGRASP)
 
+#=
 # PARTIE METAHEURISTIQUES: GRASP AVEC DESTROY AND REPAIR----------------------
 println("\nSolving with GRASP with destroy and repair...\n")
 
@@ -63,51 +74,7 @@ x, zBest = destroyAndRepear(Ctemp, A)
 println("x[i]=1 en i ∈ ", findall(x->x==1, x))
 println("z(x) = ", zBest3)
 
-rintln("\nUsing simple descent to upgrade the solution... may take time")
-xnew = simpleDescent(copy(C), copy(A), copy(x))
-@show xnew
 
-#println("\nSolving with Glouton...")
-Ctemp = copy(C)
-
-#@time x, zOpt = glouton(Ctemp,A)
-x, zOpt = glouton(Ctemp,A)
-
-#@show zOpt
-#@show x
-
-
-#=Solving a SPP instance with GLPK
-println("\nSolving with GLPK...")
-solverSelected = GLPK.Optimizer
-spp = setSPP(C, A)
-
-set_optimizer(spp, solverSelected)
-@time optimize!(spp)
-
-# Displaying the results
-println("z = ", objective_value(spp))
-print("x = "); println(value.(spp[:x]))
-=#
-
-
-#println("\nUsing simple descent to upgrade the solution... may take time")
-#@time xnew = simpleDescent(copy(C), copy(A), copy(x))
-#@show xnew
-
-
-println("\nUsing another simple descent to upgrade the solution")
-@time xnew2 = simpleDescent2(copy(C), copy(A), copy(x))
-@show xnew2
-=#
-
-
-#= Test fun 
-xtest = simpleDescent(copy(C), copy(A), [0,0,1,1,0,1,0,0])
-@show xtest
-=#
-
-#=
 # Solving a SPP instance with GLPK
 println("\nSolving with GLPK...")
 solverSelected = GLPK.Optimizer
