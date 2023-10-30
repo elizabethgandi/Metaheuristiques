@@ -1,16 +1,16 @@
 # ===========================================================================#
-# Compilant julia 1.x
+# Compilant julia 1.9
 
 println(" ----- Resolution du SPP ----- ")
 
 # Using the following packages
-using JuMP, GLPK
-using LinearAlgebra
+#using JuMP, GLPK
+#using LinearAlgebra
 using Random
 using Printf
 
 include("loadSPP.jl")
-include("setSPP.jl")
+#include("setSPP.jl")
 include("getfname.jl")
 include("construction.jl")
 include("destruction.jl")
@@ -19,7 +19,7 @@ include("amelioration.jl")
 include("grasp.jl")
 include("reconstruction.jl")
 
-Random.seed!(100)
+#Random.seed!(100)
 
 function resolution(fnames)
 
@@ -49,25 +49,26 @@ function resolution(fnames)
         # DM2 =====================================================================
 
         println("\nDM2 ----------------------------------------------------------------")
-        nbIterationGrasp = 10      # nombre d'iteration GRASP
+        nbIterationGrasp = 10       # nombre d'iteration GRASP
         nbIterationDR    = 1        # Destroy/repair
-        α                = 0.700    # alpha
+        alpha            = 0.700    # alpha
 
         start = time()
-        zinit, zls, zbest = graspSPP(C, A, α, nbIterationGrasp)
+        xbest, zbest = GRASP(C, A, alpha, nbIterationGrasp)
         tgraspSPP = time()-start
-        @printf("\nzBestGrasp   = %d ", zbest[nbIterationGrasp])
+        @printf("\nzBestGrasp   = %d ", zbest)
         println("t GRASP    : ", trunc(tgraspSPP, digits=3), "sec")
 
+
         start = time()
-        xfinal, zfinal = graspSPP_DR(C, A, α, nbIterationGrasp, nbIterationDR)
+        xfinal, zfinal = grasp_DR(C, A, alpha, nbIterationGrasp, nbIterationDR)
         tgraspSPP_DR = time()-start
         @printf("\nzBestGraspDR = %d ", zfinal)
         println("t GRASP_DR : ", trunc(tgraspSPP_DR, digits=3), "sec")
 
 
         # Sauvegarde les resultats pour cette instance ============================
-        push!(resultats, (fnames[instance], zAmelioration, trunc(tAmelioration, digits=3), zbest[nbIterationGrasp], trunc(tgraspSPP, digits=3), zfinal, trunc(tgraspSPP_DR, digits=3)) )
+        push!(resultats, (fnames[instance], zAmelioration, trunc(tAmelioration, digits=3), zbest, trunc(tgraspSPP, digits=3), zfinal, trunc(tgraspSPP_DR, digits=3)) )
 
     end
 
@@ -97,28 +98,28 @@ fnames = ["pb_100rnd0100.dat"]
 resultats = resolution(fnames)
 
 println("\nEdition des resultats ----------------------------------------------")
-CA = 0
-GRASP! = 0
-DR = 0
+nCA    = 0
+nGRASP = 0
+nDR    = 0
 for r in 1:length(resultats)
     print(resultats[r])
     meilleur = max(resultats[r][2],resultats[r][4],resultats[r][6])
     print("      ")
     if meilleur == resultats[r][2]
         print(" C+A ")
-        global CA+=1
+        global nCA+=1
     end
     if meilleur == resultats[r][4]
-        print(" GRASP! ")
-        global GRASP!+=1
+        print(" GRASP ")
+        global nGRASP+=1
     end
     if meilleur == resultats[r][6]
-        print(" GRASP! ")
-        global DR+=1
+        print(" DR ")
+        global nDR+=1
     end
     println(" ")
 end
 
-println("Nb instances : ", length(resultats), " | C+A : ", CA, " | GRASP! : ", GRASP!, " | GRASP! : ", DR)
+println("Nb instances : ", length(resultats), " | C+A : ", nCA, " | GRASP : ", nGRASP, " | DR : ", nDR)
 
 println("that's all folk")
