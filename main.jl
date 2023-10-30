@@ -14,7 +14,6 @@ include("loadSPP.jl")
 include("getfname.jl")
 include("construction.jl")
 include("destruction.jl")
-include("simpleDescent.jl")
 include("amelioration.jl")
 include("grasp.jl")
 include("reconstruction.jl")
@@ -34,15 +33,15 @@ function resolution(fnames)
 
         println("\nDM1 ----------------------------------------------------------------")
         println("\nConstruction gloutonne d'une solution admissible")
-        start = time()
+        start                        = time()
         xConstruction, zConstruction = gloutonConstruction(C, A)
-        tConstruction = time()-start
+        tConstruction                = time()-start
         @printf("z(xInit) = %d | t = %f sec\n", zConstruction, tConstruction)
 
         println("\nAmelioration par recherche locale de type plus profonde descente")
-        start = time()
+        start                        = time()
         xAmelioration, zAmelioration = gloutonAmelioration(C, A, xConstruction, zConstruction)
-        tAmelioration = time()-start
+        tAmelioration                = time()-start
         @printf("z(xBest) = %d | t = %f sec \n",zAmelioration, tAmelioration)
 
 
@@ -53,16 +52,16 @@ function resolution(fnames)
         nbIterationDR    = 1        # Destroy/repair
         alpha            = 0.700    # alpha
 
-        start = time()
+        start        = time()
         xbest, zbest = GRASP(C, A, alpha, nbIterationGrasp)
-        tgraspSPP = time()-start
+        tgraspSPP    = time()-start
         @printf("\nzBestGrasp   = %d ", zbest)
         println("t GRASP    : ", trunc(tgraspSPP, digits=3), "sec")
 
 
-        start = time()
+        start          = time()
         xfinal, zfinal = grasp_DR(C, A, alpha, nbIterationGrasp, nbIterationDR)
-        tgraspSPP_DR = time()-start
+        tgraspSPP_DR   = time()-start
         @printf("\nzBestGraspDR = %d ", zfinal)
         println("t GRASP_DR : ", trunc(tgraspSPP_DR, digits=3), "sec")
 
@@ -84,12 +83,12 @@ target = "Data"            # chemin vers le repertoire des instances
 
 # experimente une instance :
 #fnames = ["didactic.dat"]
-fnames = ["pb_100rnd0100.dat"]
+#fnames = ["pb_100rnd0300.dat"]
 #fnames = ["pb_200rnd0900.dat"]
 #fnames = ["pb_2000rnd0100.dat"]
 #fnames = ["pb_500rnd0100.dat"]
 #fnames = ["pb_500rnd0300.dat"]
-#fnames = ["pb_2000rnd0800.dat"]
+fnames = ["pb_2000rnd0100.dat"]
 
 # experimente toutes les instances :
 #fnames = getfname(target)
