@@ -1,95 +1,124 @@
 # ===========================================================================#
 # Compilant julia 1.x
 
+println(" ----- Resolution du SPP ----- ")
+
 # Using the following packages
 using JuMP, GLPK
 using LinearAlgebra
 using Random
-
+using Printf
 
 include("loadSPP.jl")
 include("setSPP.jl")
 include("getfname.jl")
-include("heuristiqueDeConstruction.jl")
+include("construction.jl")
+include("destruction.jl")
 include("simpleDescent.jl")
-include("HAmelioration.jl")
+include("amelioration.jl")
+include("grasp.jl")
+include("reconstruction.jl")
 
-# ===========================================================================#
+Random.seed!(100)
 
-# Loading a SPP instance
-println("\nLoading...")
-fname = "Data/didactic.dat"
-#fname = "Data/pb_2000rnd0100.dat"
-#fname = "Data/pb_1000rnd0700.dat"
-#fname = "Data/pb_500rnd1300.dat"
-C, A = loadSPP(fname)
+function resolution(fnames)
 
-# ============================================================================
-#PARTIE DM1===================================================================
-println("\nDM1...\n")
+    resultats = []
 
-# PARTIE CONSTRUCTION---------------------------------------------------------
-println("\nSolving with construction Glouton...\n")
+    for instance = 1:length(fnames)
 
-@time x, zBest = gloutonConstruction(C,A)
-println("x[i]=1 en i ∈ ", findall(x->x==1, x))
-println("z(x) = ", zBest)
+        C, A = loadSPP(string(target,"/",fnames[instance]))
+        println("Instance : ", fnames[instance])
+    
+        # DM1 =====================================================================
 
-# PARTIE AMELIORATION: PLUS PROFONDE DESCENTE---------------------------------
-print("\nSolving with Amelioration Glouton...")
+        println("\nDM1 ----------------------------------------------------------------")
+        println("\nConstruction gloutonne d'une solution admissible")
+        start = time()
+        xConstruction, zConstruction = gloutonConstruction(C, A)
+        tConstruction = time()-start
+        @printf("z(xInit) = %d | t = %f sec\n", zConstruction, tConstruction)
 
-@time xAmelioration, zAmelioration = gloutonAmelioration(C, A, x, zBest)
-println("x[i]=1 en i ∈ ", findall(x->x==1, xAmelioration))
-println("z(x) = ", zAmelioration)
-
-# ============================================================================
-# ============================================================================
-
-#PARTIE DM2===================================================================
-println("\nDM2...\n")
-
-#PARTIE METAHEURISTIQUES: GRASP----------------------------------------------
-println("\nSolving with GRASP only...\n")
-
-nbIterations = 10
-alpha        = 0.700
-
-@time xGRASP, zGRASP = GRASP(C, A, alpha, nbIterations)
-println("x[i]=1 en i ∈ ", findall(x->x==1, xGRASP))
-println("z(x) = ", zGRASP)
-
-#=
-# PARTIE METAHEURISTIQUES: GRASP AVEC DESTROY AND REPAIR----------------------
-println("\nSolving with GRASP with destroy and repair...\n")
-
-nbIterationsDR = 10
-alphaDR        = 0.700
-
-=#
-
-#=
-println("\nSolving with Destroy and repear...\n")
-
-x, zBest = destroyAndRepear(Ctemp, A)
-println("x[i]=1 en i ∈ ", findall(x->x==1, x))
-println("z(x) = ", zBest3)
+        println("\nAmelioration par recherche locale de type plus profonde descente")
+        start = time()
+        xAmelioration, zAmelioration = gloutonAmelioration(C, A, xConstruction, zConstruction)
+        tAmelioration = time()-start
+        @printf("z(xBest) = %d | t = %f sec \n",zAmelioration, tAmelioration)
 
 
-# Solving a SPP instance with GLPK
-println("\nSolving with GLPK...")
-solverSelected = GLPK.Optimizer
-spp = setSPP(C, A)
+        # DM2 =====================================================================
 
-set_optimizer(spp, solverSelected)
-optimize!(spp)
+        println("\nDM2 ----------------------------------------------------------------")
+        nbIterationGrasp = 10      # nombre d'iteration GRASP
+        nbIterationDR    = 1        # Destroy/repair
+        α                = 0.700    # alpha
 
-# =========================================================================== 
+        start = time()
+        zinit, zls, zbest = graspSPP(C, A, α, nbIterationGrasp)
+        tgraspSPP = time()-start
+        @printf("\nzBestGrasp   = %d ", zbest[nbIterationGrasp])
+        println("t GRASP    : ", trunc(tgraspSPP, digits=3), "sec")
 
-#Collecting the names of instances to solve
+        start = time()
+        xfinal, zfinal = graspSPP_DR(C, A, α, nbIterationGrasp, nbIterationDR)
+        tgraspSPP_DR = time()-start
+        @printf("\nzBestGraspDR = %d ", zfinal)
+        println("t GRASP_DR : ", trunc(tgraspSPP_DR, digits=3), "sec")
 
-println("\nCollecting...")
-target = "Data"
-fnames = getfname(target)
-=#
 
-println("\nThat's all folks !")
+        # Sauvegarde les resultats pour cette instance ============================
+        push!(resultats, (fnames[instance], zAmelioration, trunc(tAmelioration, digits=3), zbest[nbIterationGrasp], trunc(tgraspSPP, digits=3), zfinal, trunc(tgraspSPP_DR, digits=3)) )
+
+    end
+
+    return resultats
+end
+
+
+# =========================================================================== #
+# =========================================================================== #
+# Entry point
+
+target = "Data"            # chemin vers le repertoire des instances
+
+# experimente une instance :
+#fnames = ["didactic.dat"]
+fnames = ["pb_100rnd0100.dat"]
+#fnames = ["pb_200rnd0900.dat"]
+#fnames = ["pb_2000rnd0100.dat"]
+#fnames = ["pb_500rnd0100.dat"]
+#fnames = ["pb_500rnd0300.dat"]
+#fnames = ["pb_2000rnd0800.dat"]
+
+# experimente toutes les instances :
+#fnames = getfname(target)
+
+# collecte les resultats DM1 + DM2/GRASP + DM2/GRASP_DR
+resultats = resolution(fnames)
+
+println("\nEdition des resultats ----------------------------------------------")
+CA = 0
+GRASP! = 0
+DR = 0
+for r in 1:length(resultats)
+    print(resultats[r])
+    meilleur = max(resultats[r][2],resultats[r][4],resultats[r][6])
+    print("      ")
+    if meilleur == resultats[r][2]
+        print(" C+A ")
+        global CA+=1
+    end
+    if meilleur == resultats[r][4]
+        print(" GRASP! ")
+        global GRASP!+=1
+    end
+    if meilleur == resultats[r][6]
+        print(" GRASP! ")
+        global DR+=1
+    end
+    println(" ")
+end
+
+println("Nb instances : ", length(resultats), " | C+A : ", CA, " | GRASP! : ", GRASP!, " | GRASP! : ", DR)
+
+println("that's all folk")
