@@ -13,7 +13,7 @@ function gloutonAmelioration(C, A, xConstruction, zConstruction)
     v3                          = 0                                  # indice k la variable mise à 1, si la solution z est meilleure
 
     ameliorer                   = true                               # permet de savoir si notre solution trouvée est améliorante ou non, auquel cas on continue dans la boucle tant que
-    verbose                     = false                              # utilisé pour les affichages, faux -> aucun affichages, vrai -> tous les affichages
+    verbose                     = true                              # utilisé pour les affichages, faux -> aucun affichages, vrai -> tous les affichages
 
     # 1) CALCUL DU MEMBRE DE DROITE DES CONTRAINTES -----------------
     contraintesSaturees         = zeros(Int64, size(A,1)) 
@@ -87,9 +87,6 @@ function gloutonAmelioration(C, A, xConstruction, zConstruction)
             contraintesSaturees += A[:, v3]
 
         end
-
-        # Fin de notre amélioration donc améliorer = faux
-        ameliorer = false
     end
 
 
@@ -150,9 +147,6 @@ function gloutonAmelioration(C, A, xConstruction, zConstruction)
             contraintesSaturees -= A[:, v1]
             contraintesSaturees += A[:, v3]
         end
-
-        # Fin de notre amélioration donc améliorer = faux
-        ameliorer = false
     end
 
     # III/2) 0-1 ECHANGE ------------------------------------------------
@@ -204,9 +198,6 @@ function gloutonAmelioration(C, A, xConstruction, zConstruction)
             # 7) MISE A JOUR DU MEMBRE DE DROITE contraintesSaturees
             contraintesSaturees += A[:, v3]
         end
-
-        # Fin de notre amélioration donc améliorer = faux
-        ameliorer = false
     end
 
     println(" ")

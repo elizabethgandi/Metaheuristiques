@@ -52,7 +52,7 @@ function resolution(fnames)
         # DM2 =====================================================================
 
         println("\nDM2 ----------------------------------------------------------------")
-        nbIterationGrasp = 10       # nombre d'iteration GRASP
+        nbIterationGrasp = 1       # nombre d'iteration GRASP
         nbIterationDR    = 1        # Destroy/repair
         alpha            = 0.700    # alpha
 
@@ -87,7 +87,7 @@ target = "Data"            # chemin vers le repertoire des instances
 
 # experimente une instance :
 #fnames = ["didactic.dat"]
-fnames = ["pb_100rnd0500.dat"]
+fnames = ["pb_100rnd0100.dat"]
 #fnames = ["pb_200rnd0900.dat"]
 #fnames = ["pb_2000rnd0100.dat"]
 #fnames = ["pb_500rnd0100.dat"]
