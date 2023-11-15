@@ -10,6 +10,7 @@ using Random
 using Printf
 
 include("loadSPP.jl")
+include("ACO.jl")
 #include("setSPP.jl") car jump et glpk en commentaires
 include("getfname.jl")
 include("construction.jl")
@@ -34,7 +35,9 @@ function resolution(fnames)
         C, A = loadSPP(string(target,"/",fnames[instance]))
         println("Instance : ", fnames[instance])
     
-        # DM1 =====================================================================
+        ACO(C,A,1,1)
+
+        #= DM1 =====================================================================
 
         println("\nDM1 ----------------------------------------------------------------")
         println("\nConstruction gloutonne d'une solution admissible")
@@ -72,7 +75,7 @@ function resolution(fnames)
 
         # Sauvegarde les resultats pour cette instance ============================
         push!(resultats, (fnames[instance], zAmelioration, trunc(tAmelioration, digits=3), zbest, trunc(tgraspSPP, digits=3), zfinal, trunc(tgraspSPP_DR, digits=3)) )
-
+=#
     end
 
     return resultats
