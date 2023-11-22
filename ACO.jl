@@ -23,32 +23,29 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
         vecteurPheromones[i] = 1/length(C)
     end
 
-    # Premier appel pour obtenir une fonction d'utilité des phéromones
-    #vecteurSol = gloutonConstruction(C, A)
-
     # Boucle POUR pour avoir n itérations
     for i in 1:nbIterationsACO # fixer nbIterationsACO à 1 pour l'instant?
-
-       # println("LANCÉ $i --------------------------------------------------")
 
         idbestSol = 0
         k = k+1
 
         # Boucle POUR utilisée pour chaque fourmis
         for j in 1:nbFourmis
-            #println("FOURMIS $j --------------------------------------------------")
-            # Fonction qui construit une solution avec la roulette
             cheminFourmis[j], z = fourmisConstruction(vecteurSol, vecteurPheromones, C, A)
-            #@show cheminFourmis
-            
             vecteurSolFourmis[j] = sum(cheminFourmis[j][m]*C[m] for m in 1:length(C))
-            #println("vect sol $vecteurSolFourmis")
-            #println("-------------------------------------------------------------")
         end
 
         idbestSol = argmax(vecteurSolFourmis) 
 
-        # jusque ici tout ok-------------------------------
+        #-------------------------------------------------------
+
+        # Recherche locale sur le meilleur trouvé au bout de n itérations 
+
+        cheminFourmis[idbestSol], inutile = gloutonAmelioration(C, A, cheminFourmis[idbestSol], meilleur)
+
+        #@show cheminFourmis[idbestSol]
+
+        #-------------------------------------------------------
 
         # Evaporation
         for j in 1:length(C)
@@ -70,19 +67,8 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
                 vecteurPheromones[j] = min(1,vecteurPheromones[j]+ beta) # eviter que prob >1??
 
             end
-            # Calcule les phéromones de chacune des fourmis
-            #calculePheromones(vecteurPheromones, vecteurSol[j], bestSol)
-            #vecteurPheromones[j] = MAJ_vectP(vecteurPheromones[j]) 
         end
-        @show vecteurPheromones
-
-
-        #@show vecteurDeToutesLesSolutionsFinales
-        #@show vecteurPheromones
-
-        #vecteurDeToutesLesSolutionsFinales = vecteurSolFourmis
-
-        #vecteurSolFourmis[i] = vecteurPheromones[idbestSol]
+       
         for j in eachindex(vecteurSolFourmis)
             if(vecteurSolFourmis[j] > meilleur)
                 meilleur = vecteurSolFourmis[j] #meilleur ca doit etre int
@@ -92,17 +78,20 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
         @show meilleur
 
     end
+end
 
-    # Recherche locale sur le meilleur trouvé au bout de n itérations 
 
-    #resFinal = gloutonAmelioration(C, A, x, meilleur)
+#Si stagnation des resultats !COUP DE PIED!
+
+function coupDePied()
+    println(" COUP DE PIED!!!")
+
+
 end
 
 
 
 function roulette(nbAlea, vecteurSol)
-
-    #val plafond(nbAlea/9)
 
     return ceil(nbAlea*length(vecteurSol))
     
@@ -115,7 +104,6 @@ function fourmisConstruction(vecteurSol, vecteurPheromones, C, A)
     vecteurSol::Vector{Int64}= zeros(length(vecteurPheromones))
     z::Int64 = 0
     lambda::Float64 = 5
-    #i::Int64 = 1
     zTot::Int64 = 0
 
     vecteurSolPrime = Vector{String}()
@@ -135,53 +123,7 @@ function fourmisConstruction(vecteurSol, vecteurPheromones, C, A)
 
     vecteurSol, z = fourmisConstruction2(C, A, vecteurSol, vecteurPheromones, Int(posIndice1))
 
-    #println(vecteurSol)
-
-    #=
-    for i in 1:taille#eachindex(vecteurSol)    while (taille > 0) #
-        println("\ni = $i")
-        nbAlea = rand()
-        
-        if (vecteurSolPrime[i] == ".")
-            
-            if (nbAlea < vecteurPheromones[i])
-                println("\ntruc")
-                vecteurSol[i] = 1
-                vecteurPheromones[i] = vecteurPheromones[i]*lambda
-                println("\nAJOUT 1 -> $vecteurSol")
-
-
-                println("\nvecteur solution -> $vecteurSol")
-                vecteurSol, z = fourmisConstruction2(C, A, vecteurSol, vecteurPheromones)
-                @show z
-
-                zTot = zTot + z
-                @show zTot
-                vecteurPheromones = vecteurPheromones[setdiff(1:end, i)]
-
-                place = findall(isequal(1), vecteurSol)
-                vecteurSolPrime[place] .= "Occupé" 
-                taille = taille -1
-            else
-                vecteurSol[i] = 0
-                println("\nAJOUT 0 -> $vecteurSol")
-                taille = taille -1
-            end
-
-        end
-
-        #i = i+1
-
-        println("\ntaille = $taille")
-        
-    end
-=#
     return vecteurSol, z
-    #=if (isAdmissible(C, A, vecteurSol) == true)
-        return vecteurSol
-    else
-        return fourmisConstruction(vecteurSol, vecteurPheromones, C, A)
-    end=#
 end
 
 
@@ -293,37 +235,3 @@ function fourmisConstruction2(C_entree::Vector{Int64}, A_entree::Matrix{Int64}, 
     end
     return sol, z
 end
-
-
-function isAdmissible(C, A, x)
-
-    vecSat = zeros(Int, size(A,1))
-    vecUnit = ones(Int,size(A,1))
-    z::Int64 = 0
-    verbose = true
-    var1 = findall(isequal(1), x[:])
-
-    for j in var1
-        vecSat = vecSat .+ A[:,j]
-        z = z + C[j]
-    end
-
-    if findfirst(isequal(false), (vecSat .<= vecUnit)) != nothing
-        println( "admissible : non")
-        return false
-        #@assert false "detection solution non-admissible"
-    end
-    #println( "admissible : oui | som(x_i) = ", length(var1), " ; z = ", z)
-    println( "admissible")
-
-
-    println( "\n $z")
-    return true
-end
-
-#=
-Si stagnation des resultats !COUP DE PIED!
-
-function coupDePied()
-end
-=#
