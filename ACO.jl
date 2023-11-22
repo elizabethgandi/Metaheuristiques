@@ -6,16 +6,18 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
     vecteurSol::Vector{Int64}          = zeros(length(C))
     vecteurPropa::Vector{Int64}        = zeros(length(C))
     vecteurPheromones::Vector{Float64} = Vector(undef, length(C)) #proba entre 0 et 1
-    idbestSol::Int64                   = 0 
-    lambda::Float64                    = 0.1  # coef evaporation des fourmis initié à 10%
-    beta::Float64                      = 1.1  # coef evaporation des fourmis
-    meilleur::Float64 = 0
-    k = 0
-    z = 0
 
-    cheminFourmis::Vector{Vector{Int64}} = fill([], nbFourmis) #length(C))
-    vecteurSolFourmis::Vector{Int64}     = zeros(nbFourmis)
+    cheminFourmis::Vector{Vector{Int64}}                = fill([], nbFourmis) #length(C))
+    vecteurSolFourmis::Vector{Int64}                    = zeros(nbFourmis)
     vecteurDeToutesLesSolutionsFinales::Vector{Float64} = zeros(length(C))
+
+    idbestSol::Int64  = 0 
+    lambda::Float64   = 0.1  # coef evaporation des fourmis initié à 10%
+    beta::Float64     = 1.1  # coef evaporation des fourmis
+    meilleur::Float64 = 0
+    k::Int64          = 0
+    z::Int64          = 0
+    resFinal::Int64   = 0
 
     for i in 1:length(C)
         vecteurPheromones[i] = 1/length(C)
@@ -27,21 +29,21 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
     # Boucle POUR pour avoir n itérations
     for i in 1:nbIterationsACO # fixer nbIterationsACO à 1 pour l'instant?
 
-        println("LANCÉ $i --------------------------------------------------")
+       # println("LANCÉ $i --------------------------------------------------")
 
         idbestSol = 0
         k = k+1
 
         # Boucle POUR utilisée pour chaque fourmis
         for j in 1:nbFourmis
-            println("FOURMIS $j --------------------------------------------------")
+            #println("FOURMIS $j --------------------------------------------------")
             # Fonction qui construit une solution avec la roulette
             cheminFourmis[j], z = fourmisConstruction(vecteurSol, vecteurPheromones, C, A)
-            @show cheminFourmis
+            #@show cheminFourmis
             
             vecteurSolFourmis[j] = sum(cheminFourmis[j][m]*C[m] for m in 1:length(C))
             #println("vect sol $vecteurSolFourmis")
-            println("-------------------------------------------------------------")
+            #println("-------------------------------------------------------------")
         end
 
         idbestSol = argmax(vecteurSolFourmis) 
@@ -57,15 +59,15 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
            # end     
         end
 
-        @show vecteurPheromones
+        #@show vecteurPheromones
 
         #vecteurPheromones = evaporation(vecteurPheromones, lambda)??? Pck plus propres?
 
         # Depot des pheromones
         for j in 1:length(C)
             if (cheminFourmis[idbestSol][j] ==1)
-                max(1,vecteurPheromones[j]* beta)
-                vecteurPheromones[j] = vecteurPheromones[j]* beta
+                #max(1,vecteurPheromones[j]* beta)
+                vecteurPheromones[j] = min(1,vecteurPheromones[j]+ beta) # eviter que prob >1??
 
             end
             # Calcule les phéromones de chacune des fourmis
@@ -87,12 +89,13 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
             end
         end
 
-        println("\nLa fourmis $k trouve $vecteurSolFourmis à la $i itérations")
-
         @show meilleur
 
     end
 
+    # Recherche locale sur le meilleur trouvé au bout de n itérations 
+
+    #resFinal = gloutonAmelioration(C, A, x, meilleur)
 end
 
 
