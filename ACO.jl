@@ -7,14 +7,14 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
     vecteurPropa::Vector{Int64}        = zeros(length(C))
     vecteurPheromones::Vector{Float64} = Vector(undef, length(C)) #proba entre 0 et 1
     idbestSol::Int64                   = 0 
-    lambda::Float64                    = 0.9  # coef evaporation des fourmis
+    lambda::Float64                    = 0.1  # coef evaporation des fourmis initié à 10%
     beta::Float64                      = 1.1  # coef evaporation des fourmis
     meilleur::Float64 = 0
     k = 0
     z = 0
 
-    cheminFourmis::Vector{Vector{Int64}} = fill([], length(C))#nbFourmis
-    vecteurSolFourmis::Vector{Int64}     = zeros(length(C))
+    cheminFourmis::Vector{Vector{Int64}} = fill([], nbFourmis) #length(C))
+    vecteurSolFourmis::Vector{Int64}     = zeros(nbFourmis)
     vecteurDeToutesLesSolutionsFinales::Vector{Float64} = zeros(length(C))
 
     for i in 1:length(C)
@@ -46,20 +46,24 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
 
         idbestSol = argmax(vecteurSolFourmis) 
 
+        # jusque ici tout ok-------------------------------
+
         # Evaporation
-        for j in 1:length(vecteurPheromones)
-            if (j == idbestSol)
-                vecteurPheromones[j] = (vecteurPheromones[j] * lambda)*5
-            else 
+        for j in 1:length(C)
+            #if (j == idbestSol)
+                #vecteurPheromones[j] = (vecteurPheromones[j] * lambda)*5
+            #else 
                 vecteurPheromones[j] = vecteurPheromones[j] * lambda
-            end     
+           # end     
         end
+
+        @show vecteurPheromones
 
         #vecteurPheromones = evaporation(vecteurPheromones, lambda)??? Pck plus propres?
 
         # Depot des pheromones
         for j in 1:length(C)
-            if (cheminFourmis[j] ==1)
+            if (cheminFourmis[idbestSol][j] ==1)
                 max(1,vecteurPheromones[j]* beta)
                 vecteurPheromones[j] = vecteurPheromones[j]* beta
 
@@ -68,6 +72,7 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
             #calculePheromones(vecteurPheromones, vecteurSol[j], bestSol)
             #vecteurPheromones[j] = MAJ_vectP(vecteurPheromones[j]) 
         end
+        @show vecteurPheromones
 
 
         #@show vecteurDeToutesLesSolutionsFinales
@@ -76,14 +81,15 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
         #vecteurDeToutesLesSolutionsFinales = vecteurSolFourmis
 
         #vecteurSolFourmis[i] = vecteurPheromones[idbestSol]
-
-        if(vecteurSolFourmis[i] > meilleur)
-            meilleur = vecteurSolFourmis[i] #meilleur ca doit etre int
+        for j in eachindex(vecteurSolFourmis)
+            if(vecteurSolFourmis[j] > meilleur)
+                meilleur = vecteurSolFourmis[j] #meilleur ca doit etre int
+            end
         end
 
         println("\nLa fourmis $k trouve $vecteurSolFourmis à la $i itérations")
 
-        @show z
+        @show meilleur
 
     end
 

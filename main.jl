@@ -35,7 +35,7 @@ function resolution(fnames)
         C, A = loadSPP(string(target,"/",fnames[instance]))
         println("Instance : ", fnames[instance])
     
-        ACO(C,A,1,3)
+        ACO(C,A,30,10)
 
         #= DM1 =====================================================================
 
