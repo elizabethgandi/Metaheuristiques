@@ -13,6 +13,7 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
     meilleur::Float64  = 0
     z::Int64           = 0
     lastRestart::Int64 = 0
+    verbose::Bool      = false
 
     #-------------------------------------------------------
 
@@ -26,6 +27,7 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
     for i in 1:nbIterationsACO 
 
         idbestSol = 0
+        print("x $i")
 
         # Boucle POUR utilisée pour chaque fourmis --------------
         for j in 1:nbFourmis
@@ -56,9 +58,18 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
             end
         end
 
-        @show meilleur
+        #@show meilleur
+
+        if verbose
+            #println(" cheminFourmis   : ", cheminFourmis)
+            println(" zBest      : ", meilleur)
+            println(" lancé      : ", i)
+            println(" ")
+        end
 
     end
+
+    return meilleur
 end
 
 

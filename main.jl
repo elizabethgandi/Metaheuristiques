@@ -35,7 +35,8 @@ function resolution(fnames)
         C, A = loadSPP(string(target,"/",fnames[instance]))
         println("Instance : ", fnames[instance])
     
-        ACO(C,A,50,10)
+        zFourmis = ACO(C,A,3000,10)
+        println("zFourmis : ", zFourmis)
 
         #= DM1 =====================================================================
 
@@ -93,8 +94,8 @@ target = "Data"            # chemin vers le repertoire des instances
 #fnames = ["pb_100rnd0300.dat"]
 #fnames = ["pb_200rnd0900.dat"]
 #fnames = ["pb_2000rnd0100.dat"]
-fnames = ["pb_500rnd0100.dat"]
-#fnames = ["pb_500rnd0300.dat"]
+#fnames = ["pb_500rnd0100.dat"]
+fnames = ["pb_500rnd0300.dat"]
 #fnames = ["pb_2000rnd0100.dat"]
 
 # experimente toutes les instances :
