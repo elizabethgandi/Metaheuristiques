@@ -13,7 +13,7 @@ function gloutonAmelioration(C, A, xConstruction, zConstruction)
     v3                          = 0                                  # indice k la variable mise à 1, si la solution z est meilleure
 
     ameliorer                   = true                               # permet de savoir si notre solution trouvée est améliorante ou non, auquel cas on continue dans la boucle tant que
-    verbose                     = true                              # utilisé pour les affichages, faux -> aucun affichages, vrai -> tous les affichages
+    verbose                     = false                              # utilisé pour les affichages, faux -> aucun affichages, vrai -> tous les affichages
 
     # 1) CALCUL DU MEMBRE DE DROITE DES CONTRAINTES -----------------
     contraintesSaturees         = zeros(Int64, size(A,1)) 

@@ -1,40 +1,39 @@
 function ACO(C, A, nbIterationsACO, nbFourmis)
-    # Initialisation
 
-    #print(C)
+    # Initialisation --------------------------------------------
 
-    vecteurSol::Vector{Int64}          = zeros(length(C))
-    vecteurPropa::Vector{Int64}        = zeros(length(C))
-    vecteurPheromones::Vector{Float64} = Vector(undef, length(C)) #proba entre 0 et 1
+    vecteurSol::Vector{Int64}            = zeros(length(C))
+    vecteurPheromones::Vector{Float64}   = Vector(undef, length(C)) #proba entre 0 et 1
+    cheminFourmis::Vector{Vector{Int64}} = fill([], nbFourmis)      
+    vecteurSolFourmis::Vector{Int64}     = zeros(nbFourmis)
 
-    cheminFourmis::Vector{Vector{Int64}}                = fill([], nbFourmis) #length(C))
-    vecteurSolFourmis::Vector{Int64}                    = zeros(nbFourmis)
-    vecteurDeToutesLesSolutionsFinales::Vector{Float64} = zeros(length(C))
-
-    idbestSol::Int64  = 0 
-    lambda::Float64   = 0.1  # coef evaporation des fourmis initié à 10%
-    beta::Float64     = 1.1  # coef evaporation des fourmis
-    meilleur::Float64 = 0
-    k::Int64          = 0
-    z::Int64          = 0
-    resFinal::Int64   = 0
+    idbestSol::Int64   = 0 
+    lambda::Float64    = 0.1  # coef evaporation des fourmis initié à 10%
+    beta::Float64      = 1.1  # coef evaporation des fourmis
+    meilleur::Float64  = 0
+    z::Int64           = 0
     lastRestart::Int64 = 0
+
+    #-------------------------------------------------------
 
     for i in 1:length(C)
         vecteurPheromones[i] = 1/length(C)
     end
 
-    # Boucle POUR pour avoir n itérations
-    for i in 1:nbIterationsACO # fixer nbIterationsACO à 1 pour l'instant?
+    #-----------------------------------------------------------
+
+    # Boucle POUR pour avoir n itérations ------------------------
+    for i in 1:nbIterationsACO 
 
         idbestSol = 0
-        k = k+1
 
-        # Boucle POUR utilisée pour chaque fourmis
+        # Boucle POUR utilisée pour chaque fourmis --------------
         for j in 1:nbFourmis
             cheminFourmis[j], z = fourmisConstruction(vecteurSol, vecteurPheromones, C, A)
             vecteurSolFourmis[j] = sum(cheminFourmis[j][m]*C[m] for m in 1:length(C))
         end
+
+        #-------------------------------------------------------
 
         idbestSol = argmax(vecteurSolFourmis) 
 
@@ -44,16 +43,16 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
 
         cheminFourmis[idbestSol], inutile = gloutonAmelioration(C, A, cheminFourmis[idbestSol], meilleur)
 
-        #@show cheminFourmis[idbestSol]
 
         #-------------------------------------------------------
 
-        # remplace l'evaporation + depot des pheromones
         vecteurPheromones = coupDePied(vecteurPheromones, cheminFourmis, idbestSol, i, nbIterationsACO, lastRestart, lambda, beta, meilleur)
        
+        #-------------------------------------------------------
+
         for j in eachindex(vecteurSolFourmis)
             if(vecteurSolFourmis[j] > meilleur)
-                meilleur = vecteurSolFourmis[j] #meilleur ca doit etre int
+                meilleur = vecteurSolFourmis[j]
             end
         end
 
@@ -66,17 +65,15 @@ end
 #Si stagnation des resultats !COUP DE PIED!
 
 function coupDePied(vecteurPheromones, cheminFourmis, idbestSol, iter, iterMax, lastRestart, lambda, beta, meilleur)
-    restart::Bool = true
 
-    # Evaporation
+    # Evaporation ------------------------------------------
     for j in 1:length(vecteurPheromones)
         vecteurPheromones[j] = vecteurPheromones[j] * lambda    
     end
 
+    #-------------------------------------------------------
 
-    #vecteurPheromones = evaporation(vecteurPheromones, lambda)??? Pck plus propres?
-
-    # Depot des pheromones
+    # Depot des pheromones ---------------------------------
     for j in 1:length(vecteurPheromones)
         if (cheminFourmis[idbestSol][j] ==1)
             
@@ -84,18 +81,22 @@ function coupDePied(vecteurPheromones, cheminFourmis, idbestSol, iter, iterMax, 
         end
     end
 
+    #-------------------------------------------------------
+
+    # Coup de pied -----------------------------------------
     #si solution stagnante #si pheromones a 0
     #si on peut donner un coup de pied (comparer nb iteration avec nb iteration max et le dernier coup de pieds)
 
     if (meilleur == cheminFourmis[idbestSol]) && (findall(isequal(0), vecteurPheromones) == true) && (iter-lastRestart > 10)
         println(" COUP DE PIED!!!")
-        # Alors 
-        # Perturbation 1
+
+        # Perturbation 1 -----------------------------------
         for j in 1:length(vecteurPheromones)
             vecteurPheromones[j] = vecteurPheromones[j]*0.95*(log10(iter)/log10(iterMax)) # POUR TOUT CASSERRRR
         end
+        #-------------------------------------------------------
 
-        # Perturbation 2
+        # Perturbation 2 ------------------------------------
 
         for j in rand(0:length(vecteurPheromones))
             vecteurPheromones[rand(1:length(vecteurPheromones))] = rand(.05:.1:(iter-(1/iterMax))*.5, 1, 1)
@@ -106,6 +107,9 @@ function coupDePied(vecteurPheromones, cheminFourmis, idbestSol, iter, iterMax, 
                 vecteurPheromones[j] =  rand(.05:.1:(iter-(1/iterMax))*.5, 1, 1)
             end
         end
+
+        #-------------------------------------------------------
+
     end
     return vecteurPheromones
 end
@@ -113,42 +117,26 @@ end
 
 
 function roulette(nbAlea, vecteurSol)
-
     return ceil(nbAlea*length(vecteurSol))
-    
 end
 
 
 
 function fourmisConstruction(vecteurSol, vecteurPheromones, C, A)
 
-    vecteurSol::Vector{Int64}= zeros(length(vecteurPheromones))
-    z::Int64 = 0
-    lambda::Float64 = 5
-    zTot::Int64 = 0
+    z::Int64        = 0
+    nbAlea::Float64 = rand()
 
-    vecteurSolPrime = Vector{String}()
-    vecteurBool = Vector{Bool}(undef, length(vecteurPheromones))
-
-    for i in 1:length(vecteurPheromones)
-        push!(vecteurSolPrime,".")
-    end
-
-    taille::Int64 = length(vecteurPheromones)
-
-    nbAlea = rand()
-
-    posIndice1 = roulette(nbAlea, vecteurSol)
-    #vecteurSol[Int(posIndice1)] = 1
-    #println(vecteurSol)
-
-    vecteurSol, z = fourmisConstruction2(C, A, vecteurSol, vecteurPheromones, Int(posIndice1))
+    #-------------------------------------------------------
+    
+    posIndice1    = roulette(nbAlea, vecteurSol)
+    vecteurSol, z = fourmisConstructionGlouton(C, A, vecteurSol, vecteurPheromones, Int(posIndice1))
 
     return vecteurSol, z
 end
 
 
-function fourmisConstruction2(C_entree::Vector{Int64}, A_entree::Matrix{Int64}, vecteurSol, vecteurPheromones, position)
+function fourmisConstructionGlouton(C_entree::Vector{Int64}, A_entree::Matrix{Int64}, vecteurSol, vecteurPheromones, position)
 
     C = copy(C_entree) 
     A = copy(A_entree) 
