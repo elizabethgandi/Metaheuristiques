@@ -18,6 +18,7 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
     k::Int64          = 0
     z::Int64          = 0
     resFinal::Int64   = 0
+    lastRestart::Int64 = 0
 
     for i in 1:length(C)
         vecteurPheromones[i] = 1/length(C)
@@ -47,27 +48,8 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
 
         #-------------------------------------------------------
 
-        # Evaporation
-        for j in 1:length(C)
-            #if (j == idbestSol)
-                #vecteurPheromones[j] = (vecteurPheromones[j] * lambda)*5
-            #else 
-                vecteurPheromones[j] = vecteurPheromones[j] * lambda
-           # end     
-        end
-
-        #@show vecteurPheromones
-
-        #vecteurPheromones = evaporation(vecteurPheromones, lambda)??? Pck plus propres?
-
-        # Depot des pheromones
-        for j in 1:length(C)
-            if (cheminFourmis[idbestSol][j] ==1)
-                #max(1,vecteurPheromones[j]* beta)
-                vecteurPheromones[j] = min(1,vecteurPheromones[j]+ beta) # eviter que prob >1??
-
-            end
-        end
+        # remplace l'evaporation + depot des pheromones
+        vecteurPheromones = coupDePied(vecteurPheromones, cheminFourmis, idbestSol, i, nbIterationsACO, lastRestart, lambda, beta, meilleur)
        
         for j in eachindex(vecteurSolFourmis)
             if(vecteurSolFourmis[j] > meilleur)
@@ -83,10 +65,49 @@ end
 
 #Si stagnation des resultats !COUP DE PIED!
 
-function coupDePied()
-    println(" COUP DE PIED!!!")
+function coupDePied(vecteurPheromones, cheminFourmis, idbestSol, iter, iterMax, lastRestart, lambda, beta, meilleur)
+    restart::Bool = true
+
+    # Evaporation
+    for j in 1:length(vecteurPheromones)
+        vecteurPheromones[j] = vecteurPheromones[j] * lambda    
+    end
 
 
+    #vecteurPheromones = evaporation(vecteurPheromones, lambda)??? Pck plus propres?
+
+    # Depot des pheromones
+    for j in 1:length(vecteurPheromones)
+        if (cheminFourmis[idbestSol][j] ==1)
+            
+            vecteurPheromones[j] = min(1,vecteurPheromones[j]+ beta) # eviter que prob >1??
+        end
+    end
+
+    #si solution stagnante #si pheromones a 0
+    #si on peut donner un coup de pied (comparer nb iteration avec nb iteration max et le dernier coup de pieds)
+
+    if (meilleur == cheminFourmis[idbestSol]) && (findall(isequal(0), vecteurPheromones) == true) && (iter-lastRestart > 10)
+        println(" COUP DE PIED!!!")
+        # Alors 
+        # Perturbation 1
+        for j in 1:length(vecteurPheromones)
+            vecteurPheromones[j] = vecteurPheromones[j]*0.95*(log10(iter)/log10(iterMax)) # POUR TOUT CASSERRRR
+        end
+
+        # Perturbation 2
+
+        for j in rand(0:length(vecteurPheromones))
+            vecteurPheromones[rand(1:length(vecteurPheromones))] = rand(.05:.1:(iter-(1/iterMax))*.5, 1, 1)
+         end
+
+        for j in 1:length(vecteurPheromones)
+            if (vecteurPheromones[j] < 0.1) 
+                vecteurPheromones[j] =  rand(.05:.1:(iter-(1/iterMax))*.5, 1, 1)
+            end
+        end
+    end
+    return vecteurPheromones
 end
 
 
