@@ -27,7 +27,7 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
     for i in 1:nbIterationsACO 
 
         idbestSol = 0
-        print("x $i")
+        print("iter $i -> z = $z")
 
         # Boucle POUR utilisée pour chaque fourmis --------------
         for j in 1:nbFourmis
@@ -48,7 +48,7 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
 
         #-------------------------------------------------------
 
-        vecteurPheromones = coupDePied(vecteurPheromones, cheminFourmis, idbestSol, i, nbIterationsACO, lastRestart, lambda, beta, meilleur)
+        vecteurPheromones = coupDePied(vecteurPheromones, cheminFourmis, idbestSol, i, nbIterationsACO, lastRestart, lambda, beta, meilleur, z)
        
         #-------------------------------------------------------
 
@@ -75,7 +75,7 @@ end
 
 #Si stagnation des resultats !COUP DE PIED!
 
-function coupDePied(vecteurPheromones, cheminFourmis, idbestSol, iter, iterMax, lastRestart, lambda, beta, meilleur)
+function coupDePied(vecteurPheromones, cheminFourmis, idbestSol, iter, iterMax, lastRestart, lambda, beta, meilleur, zFourmis)
 
     # Evaporation ------------------------------------------
     for j in 1:length(vecteurPheromones)
@@ -87,7 +87,6 @@ function coupDePied(vecteurPheromones, cheminFourmis, idbestSol, iter, iterMax, 
     # Depot des pheromones ---------------------------------
     for j in 1:length(vecteurPheromones)
         if (cheminFourmis[idbestSol][j] ==1)
-            
             vecteurPheromones[j] = min(1,vecteurPheromones[j]+ beta) # eviter que prob >1??
         end
     end
@@ -98,11 +97,12 @@ function coupDePied(vecteurPheromones, cheminFourmis, idbestSol, iter, iterMax, 
     #si solution stagnante #si pheromones a 0
     #si on peut donner un coup de pied (comparer nb iteration avec nb iteration max et le dernier coup de pieds)
 
-    if (meilleur == cheminFourmis[idbestSol]) && (findall(isequal(0), vecteurPheromones) == true) && (iter-lastRestart > 10)
+    if (meilleur == zFourmis) && ((length((findall(isequal(1.0), vecteurPheromones)))>0) == true) && ((mod(iter-lastRestart, 10))==0)
         println(" COUP DE PIED!!!")
 
         # Perturbation 1 -----------------------------------
         for j in 1:length(vecteurPheromones)
+            #println(" P1")
             vecteurPheromones[j] = vecteurPheromones[j]*0.95*(log10(iter)/log10(iterMax)) # POUR TOUT CASSERRRR
         end
         #-------------------------------------------------------
@@ -110,12 +110,14 @@ function coupDePied(vecteurPheromones, cheminFourmis, idbestSol, iter, iterMax, 
         # Perturbation 2 ------------------------------------
 
         for j in rand(0:length(vecteurPheromones))
-            vecteurPheromones[rand(1:length(vecteurPheromones))] = rand(.05:.1:(iter-(1/iterMax))*.5, 1, 1)
+            #println(" P2")
+            vecteurPheromones[rand(1:length(vecteurPheromones))] = rand(.05:(iter-(1/iterMax))*.5)
          end
 
         for j in 1:length(vecteurPheromones)
+            #println(" P3")
             if (vecteurPheromones[j] < 0.1) 
-                vecteurPheromones[j] =  rand(.05:.1:(iter-(1/iterMax))*.5, 1, 1)
+                vecteurPheromones[j] =  rand(.05:(iter-(1/iterMax))*.5)
             end
         end
 
