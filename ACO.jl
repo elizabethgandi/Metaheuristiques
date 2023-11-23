@@ -69,7 +69,7 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
 
     end
 
-    return meilleur
+    return cheminFourmis[idbestSol], meilleur
 end
 
 

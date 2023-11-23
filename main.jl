@@ -34,9 +34,6 @@ function resolution(fnames)
 
         C, A = loadSPP(string(target,"/",fnames[instance]))
         println("Instance : ", fnames[instance])
-    
-        zFourmis = ACO(C,A,20,10)
-        println("zFourmis : ", zFourmis)
 
         #= DM1 =====================================================================
 
@@ -71,12 +68,20 @@ function resolution(fnames)
         tgraspSPP_DR   = time()-start
         @printf("\nzBestGraspDR = %d ", zfinal)
         println("t GRASP_DR : ", trunc(tgraspSPP_DR, digits=3), "sec")
+=#
+        # DM3 =====================================================================
 
+        println("\nDM3 ----------------------------------------------------------------")
+        nbLancés  = 50        # nombre de lancés 
+        nbFourmis = 10        # nombre de fourmis
 
+        start        = time()
+        xfourmis, zfourmis = ACO(C,A,nbLancés, nbFourmis)
+        @printf("\nzFourmis   = %d ", zfourmis)
 
         # Sauvegarde les resultats pour cette instance ============================
-        push!(resultats, (fnames[instance], zAmelioration, trunc(tAmelioration, digits=3), zbest, trunc(tgraspSPP, digits=3), zfinal, trunc(tgraspSPP_DR, digits=3)) )
-=#
+        #push!(resultats, (fnames[instance], zAmelioration, trunc(tAmelioration, digits=3), zbest, trunc(tgraspSPP, digits=3), zfinal, trunc(tgraspSPP_DR, digits=3)) )
+
     end
 
     return resultats
