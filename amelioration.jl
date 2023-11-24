@@ -200,7 +200,7 @@ function gloutonAmelioration(C, A, xConstruction, zConstruction)
         end
     end
 
-    println(" ")
+    #println(" ")
 
     return xCourant, zMeilleur
 end

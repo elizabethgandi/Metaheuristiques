@@ -72,12 +72,17 @@ function resolution(fnames)
         # DM3 =====================================================================
 
         println("\nDM3 ----------------------------------------------------------------")
-        nbLancés  = 50        # nombre de lancés 
-        nbFourmis = 10        # nombre de fourmis
+        nbLancés  = 200        # nombre de lancés 
+        nbFourmis = 10         # nombre de fourmis
 
-        start        = time()
+        start              = time()
+        tgraspSPP_ACO      = time()-start
         xfourmis, zfourmis = ACO(C,A,nbLancés, nbFourmis)
+
         @printf("\nzFourmis   = %d ", zfourmis)
+        println("t ACO : ", trunc(tgraspSPP_ACO, digits=3), "sec")
+
+
 
         # Sauvegarde les resultats pour cette instance ============================
         #push!(resultats, (fnames[instance], zAmelioration, trunc(tAmelioration, digits=3), zbest, trunc(tgraspSPP, digits=3), zfinal, trunc(tgraspSPP_DR, digits=3)) )
@@ -96,8 +101,8 @@ target = "Data"            # chemin vers le repertoire des instances
 
 # experimente une instance :
 #fnames = ["didactic.dat"]
-fnames = ["pb_100rnd0100.dat"]
-#fnames = ["pb_200rnd0700.dat"]
+fnames = ["pb_200rnd0100.dat"]
+#fnames = ["pb_1000rnd0700.dat"]
 #fnames = ["pb_2000rnd0100.dat"]
 #fnames = ["pb_500rnd0100.dat"]
 #fnames = ["pb_500rnd0300.dat"]
@@ -106,7 +111,7 @@ fnames = ["pb_100rnd0100.dat"]
 # experimente toutes les instances :
 #fnames = getfname(target)
 
-# collecte les resultats DM1 + DM2/GRASP + DM2/GRASP_DR
+# collecte les resultats DM1 + DM2/GRASP + DM2/GRASP_DR + DM3/ACO
 resultats = resolution(fnames)
 
 println("\nEdition des resultats ----------------------------------------------")

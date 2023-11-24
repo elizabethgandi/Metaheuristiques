@@ -27,7 +27,9 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
     for i in 1:nbIterationsACO 
 
         idbestSol = 0
-        print("iter $i -> z = $z")
+
+        print("\niter $i -> z = $z")
+
 
         # Boucle POUR utilisée pour chaque fourmis --------------
         for j in 1:nbFourmis
@@ -53,7 +55,7 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
         #-------------------------------------------------------
 
         for j in eachindex(vecteurSolFourmis)
-            if(vecteurSolFourmis[j] > meilleur)
+            if (vecteurSolFourmis[j] > meilleur)
                 meilleur = vecteurSolFourmis[j]
             end
         end
@@ -82,7 +84,7 @@ function coupDePied(vecteurPheromones, cheminFourmis, idbestSol, iter, iterMax, 
 
     #-------------------------------------------------------
 
-    # Depot des pheromones ---------------------------------
+    # Dépôt des pheromones ---------------------------------
     for j in 1:length(vecteurPheromones)
         if (cheminFourmis[idbestSol][j] ==1)
             vecteurPheromones[j] = min(1,vecteurPheromones[j]+ beta) 
@@ -92,7 +94,7 @@ function coupDePied(vecteurPheromones, cheminFourmis, idbestSol, iter, iterMax, 
     #-------------------------------------------------------
 
     if (meilleur == zFourmis) && ((length((findall(isequal(1.0), vecteurPheromones)))>0) == true) && ((mod(iter-lastRestart, 10))==0)
-        println(" COUP DE PIED!!!")
+        #println(" COUP DE PIED!!!")
 
         # Perturbation 1 -----------------------------------
         for j in 1:length(vecteurPheromones)
@@ -104,7 +106,7 @@ function coupDePied(vecteurPheromones, cheminFourmis, idbestSol, iter, iterMax, 
 
         for j in rand(0:length(vecteurPheromones))
             vecteurPheromones[rand(1:length(vecteurPheromones))] = rand(.05:(iter-(1/iterMax))*.5)
-         end
+        end
 
         for j in 1:length(vecteurPheromones)
             if (vecteurPheromones[j] < 0.1) 
@@ -174,7 +176,7 @@ function fourmisConstructionGlouton(C_entree::Vector{Int64}, A_entree::Matrix{In
 
     # 2) CALCUL DES UTILITES --------------------------------------------------
 
-    candidates = vecteurPheromones
+    candidates = copy(vecteurPheromones)
 
     while (size(A,1) != 0) && (size(C,1) != 0) 
         iteration = iteration + 1
