@@ -72,7 +72,7 @@ function resolution(fnames)
         # DM3 =====================================================================
 
         println("\nDM3 ----------------------------------------------------------------")
-        nbLancés  = 200        # nombre de lancés 
+        nbLancés  = 10        # nombre de lancés 
         nbFourmis = 10         # nombre de fourmis
 
         start              = time()
@@ -101,11 +101,11 @@ target = "Data"            # chemin vers le repertoire des instances
 
 # experimente une instance :
 #fnames = ["didactic.dat"]
-fnames = ["pb_200rnd0100.dat"]
+#fnames = ["pb_2000rnd0100.dat"]
 #fnames = ["pb_1000rnd0700.dat"]
 #fnames = ["pb_2000rnd0100.dat"]
-#fnames = ["pb_500rnd0100.dat"]
-#fnames = ["pb_500rnd0300.dat"]
+fnames = ["pb_500rnd0100.dat"]
+#fnames = ["pb_100rnd0100.dat"]
 #fnames = ["pb_2000rnd0100.dat"]
 
 # experimente toutes les instances :

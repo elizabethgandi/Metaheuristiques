@@ -45,7 +45,9 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
 
         # Recherche locale sur le meilleur trouvé au bout de n itérations 
 
-        cheminFourmis[idbestSol], inutile = gloutonAmelioration(C, A, cheminFourmis[idbestSol], meilleur)
+        # Amélioration trop longue!!!!!
+
+        #cheminFourmis[idbestSol], inutile = gloutonAmelioration(C, A, cheminFourmis[idbestSol], meilleur)
 
 
         #-------------------------------------------------------
@@ -59,8 +61,7 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
                 meilleur = vecteurSolFourmis[j]
             end
         end
-
-        #@show meilleur
+        
 
         if verbose
             #println(" cheminFourmis   : ", cheminFourmis)
@@ -70,6 +71,8 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
         end
 
     end
+
+    cheminFourmis[idbestSol], inutile = gloutonAmelioration(C, A, cheminFourmis[idbestSol], meilleur)
 
     return cheminFourmis[idbestSol], meilleur
 end
