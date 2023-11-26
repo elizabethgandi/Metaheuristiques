@@ -8,12 +8,20 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
     vecteurSolFourmis::Vector{Int64}     = zeros(nbFourmis)
 
     idbestSol::Int64   = 0 
-    lambda::Float64    = 0.1  # coef evaporation des fourmis initié à 10%
-    beta::Float64      = 1.1  # coef evaporation des fourmis
+    lambda::Float64    = 0.2  # coef evaporation des fourmis initié à 10%
+    beta::Float64      = 0.7  # coef de dépots des fourmis
     meilleur::Float64  = 0
     z::Int64           = 0
     lastRestart::Int64 = 0
     verbose::Bool      = false
+
+    #-------------------------------------------------------
+    # Plot -------------------------------------------------
+
+    x         = [] # itérations
+    y         = [] # la valeur de 1 fourmis
+    yMeilleur = [] # la meilleure des fourmis à 1 itération
+    xMeilleur = []
 
     #-------------------------------------------------------
 
@@ -34,7 +42,9 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
         # Boucle POUR utilisée pour chaque fourmis --------------
         for j in 1:nbFourmis
             cheminFourmis[j], z = fourmisConstruction(vecteurSol, vecteurPheromones, C, A)
-            vecteurSolFourmis[j] = sum(cheminFourmis[j][m]*C[m] for m in 1:length(C))
+            push!(y,z)
+            push!(x,i)
+            vecteurSolFourmis[j] = sum(cheminFourmis[j][m]*C[m] for m in 1:length(C)) # remplacer par z?
         end
 
         #-------------------------------------------------------
@@ -48,6 +58,7 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
         # Amélioration trop longue!!!!!
 
         #cheminFourmis[idbestSol], inutile = gloutonAmelioration(C, A, cheminFourmis[idbestSol], meilleur)
+        @show cheminFourmis[idbestSol]
 
 
         #-------------------------------------------------------
@@ -56,12 +67,16 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
        
         #-------------------------------------------------------
 
+
         for j in eachindex(vecteurSolFourmis)
             if (vecteurSolFourmis[j] > meilleur)
                 meilleur = vecteurSolFourmis[j]
             end
         end
-        
+
+        push!(yMeilleur, meilleur)
+        push!(xMeilleur, i)
+        #@show yMeilleur
 
         if verbose
             #println(" cheminFourmis   : ", cheminFourmis)
@@ -70,9 +85,17 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
             println(" ")
         end
 
+       
+
     end
 
-    cheminFourmis[idbestSol], inutile = gloutonAmelioration(C, A, cheminFourmis[idbestSol], meilleur)
+    #x = collect(1:length(y))
+    #@show y
+    #plot(x,y)
+    scatter(x,y, s=2, c="black")
+    scatter(xMeilleur,yMeilleur, s=4, c="red")
+
+    #cheminFourmis[idbestSol], inutile = gloutonAmelioration(C, A, cheminFourmis[idbestSol], meilleur)
 
     return cheminFourmis[idbestSol], meilleur
 end
@@ -90,7 +113,7 @@ function coupDePied(vecteurPheromones, cheminFourmis, idbestSol, iter, iterMax, 
     # Dépôt des pheromones ---------------------------------
     for j in 1:length(vecteurPheromones)
         if (cheminFourmis[idbestSol][j] ==1)
-            vecteurPheromones[j] = min(1,vecteurPheromones[j]+ beta) 
+            vecteurPheromones[j] = min(1,vecteurPheromones[j]+ beta) #+
         end
     end
 
@@ -129,6 +152,16 @@ function roulette(nbAlea, vecteurSol)
     return ceil(nbAlea*length(vecteurSol))
 end
 
+function positionRoulette(vecteurPheromones)
+    cumule = cumsum(vecteurPheromones) 
+    vTiree = cumule[end]*rand()
+    i = 1
+    while (cumule[i] < vTiree)
+        i = i+1
+    end
+    return i
+end
+
 
 
 function fourmisConstruction(vecteurSol, vecteurPheromones, C, A)
@@ -143,6 +176,8 @@ function fourmisConstruction(vecteurSol, vecteurPheromones, C, A)
 
     return vecteurSol, z
 end
+
+
 
 
 function fourmisConstructionGlouton(C_entree::Vector{Int64}, A_entree::Matrix{Int64}, vecteurSol, vecteurPheromones, position)
@@ -190,7 +225,8 @@ function fourmisConstructionGlouton(C_entree::Vector{Int64}, A_entree::Matrix{In
         if (iteration == 1)
             bestCandidate = position
         else
-            bestCandidate = argmax(candidates)
+            #bestCandidate = argmax(candidates)
+            bestCandidate = positionRoulette(candidates)
         end
         # Mise à jour de la solution avec le candidat selectionne
         sol[index[bestCandidate]] = 1

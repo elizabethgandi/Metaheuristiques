@@ -8,6 +8,7 @@ println(" ----- Resolution du SPP ----- ")
 # Using LinearAlgebra
 using Random
 using Printf
+using PyPlot
 
 include("loadSPP.jl")
 include("ACO.jl")
@@ -34,6 +35,11 @@ function resolution(fnames)
 
         C, A = loadSPP(string(target,"/",fnames[instance]))
         println("Instance : ", fnames[instance])
+
+        xOrigine = (0,0)
+        yOrigine = (0,0)
+        x = [] # solutions z des fourmis
+        y = [] # la meilleure des fourmis
 
         #= DM1 =====================================================================
 
@@ -72,7 +78,7 @@ function resolution(fnames)
         # DM3 =====================================================================
 
         println("\nDM3 ----------------------------------------------------------------")
-        nbLancés  = 10        # nombre de lancés 
+        nbLancés  = 50        # nombre de lancés 
         nbFourmis = 10         # nombre de fourmis
 
         start              = time()
@@ -104,8 +110,8 @@ target = "Data"            # chemin vers le repertoire des instances
 #fnames = ["pb_2000rnd0100.dat"]
 #fnames = ["pb_1000rnd0700.dat"]
 #fnames = ["pb_2000rnd0100.dat"]
-fnames = ["pb_500rnd0100.dat"]
-#fnames = ["pb_100rnd0100.dat"]
+#fnames = ["pb_500rnd0100.dat"]
+fnames = ["pb_100rnd0100.dat"]
 #fnames = ["pb_2000rnd0100.dat"]
 
 # experimente toutes les instances :
