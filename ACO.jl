@@ -93,7 +93,9 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
     #@show y
     #plot(x,y)
     scatter(x,y, s=2, c="black")
-    scatter(xMeilleur,yMeilleur, s=4, c="red")
+    #scatter(xMeilleur,yMeilleur, s=4, c="red")
+    plt.plot(xMeilleur,yMeilleur, c="red")
+    plt.show()
 
     #cheminFourmis[idbestSol], inutile = gloutonAmelioration(C, A, cheminFourmis[idbestSol], meilleur)
 
@@ -151,6 +153,7 @@ end
 function roulette(nbAlea, vecteurSol)
     return ceil(nbAlea*length(vecteurSol))
 end
+
 
 function positionRoulette(vecteurPheromones)
     cumule = cumsum(vecteurPheromones) 
