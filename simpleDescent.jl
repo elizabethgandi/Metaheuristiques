@@ -5,7 +5,7 @@ include("getfname.jl")
 function simpleDescent(C::Vector{Int64}, A::Matrix{Int64}, x::Vector{Int64}, z::Int64) 
 
     # Affichage 
-    verbose::Bool = true
+    verbose::Bool = false
 
     # Init
     bestX               = zeros(Int64, length(C))
@@ -182,6 +182,6 @@ function simpleDescent(C::Vector{Int64}, A::Matrix{Int64}, x::Vector{Int64}, z::
         bestX[i] = 1
     end
 
-    print("\ntime :")
+    #print("\ntime :")
     return bestX, bestZ
 end

@@ -73,8 +73,8 @@ function resolution(fnames)
         # DM3 =====================================================================
 
         println("\nDM3 ----------------------------------------------------------------")
-        nbLancés  = 100        # nombre de lancés 
-        nbFourmis = 10         # nombre de fourmis
+        nbLancés  = 50         # nombre de lancés 
+        nbFourmis = 5         # nombre de fourmis
 
         start              = time()
         tgraspSPP_ACO      = time()-start
@@ -105,8 +105,8 @@ target = "Data"            # chemin vers le repertoire des instances
 #fnames = ["pb_2000rnd0100.dat"]
 #fnames = ["pb_1000rnd0700.dat"]
 #fnames = ["pb_2000rnd0100.dat"]
-#fnames = ["pb_500rnd0100.dat"]
-fnames = ["pb_200rnd0100.dat"]
+#fnames = ["pb_100rnd0300.dat"]
+fnames = ["pb_1000rnd0100.dat"]
 #fnames = ["pb_2000rnd0100.dat"]
 
 # experimente toutes les instances :
