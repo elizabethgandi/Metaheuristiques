@@ -36,7 +36,7 @@ function resolution(fnames)
         C, A = loadSPP(string(target,"/",fnames[instance]))
         println("Instance : ", fnames[instance])
 
-        #= DM1 =====================================================================
+        # DM1 =====================================================================
 
         println("\nDM1 ----------------------------------------------------------------")
         println("\nConstruction gloutonne d'une solution admissible")
@@ -69,24 +69,21 @@ function resolution(fnames)
         tgraspSPP_DR   = time()-start
         @printf("\nzBestGraspDR = %d ", zfinal)
         println("t GRASP_DR : ", trunc(tgraspSPP_DR, digits=3), "sec")
-=#
+
         # DM3 =====================================================================
 
         println("\nDM3 ----------------------------------------------------------------")
-        nbLancés  = 100         # nombre de lancés 
+        nbLancés  = 100        # nombre de lancés 
         nbFourmis = 10         # nombre de fourmis
 
         start              = time()
         tgraspSPP_ACO      = time()-start
         xfourmis, zfourmis = ACO(C,A,nbLancés, nbFourmis)
-
         @printf("\nzFourmis   = %d ", zfourmis)
         println("t ACO : ", trunc(tgraspSPP_ACO, digits=3), "sec")
 
-
-
         # Sauvegarde les resultats pour cette instance ============================
-        #push!(resultats, (fnames[instance], zAmelioration, trunc(tAmelioration, digits=3), zbest, trunc(tgraspSPP, digits=3), zfinal, trunc(tgraspSPP_DR, digits=3)) )
+        push!(resultats, (fnames[instance], zAmelioration, trunc(tAmelioration, digits=3), zbest, trunc(tgraspSPP, digits=3), zfinal, trunc(tgraspSPP_DR, digits=3), zfourmis, trunc(tgraspSPP_ACO, digits=3)))
 
     end
 
@@ -101,12 +98,11 @@ end
 target = "Data"            # chemin vers le repertoire des instances
 
 # experimente une instance :
-#fnames = ["didactic.dat"]
-#fnames = ["pb_2000rnd0100.dat"]
-#fnames = ["pb_1000rnd0700.dat"]
+fnames = ["didactic.dat"]
 #fnames = ["pb_2000rnd0100.dat"]
 #fnames = ["pb_100rnd0300.dat"]
-fnames = ["pb_100rnd0100.dat"]
+#fnames = ["pb_500rnd1300.dat"]
+#fnames = ["pb_500rnd0500.dat"]
 #fnames = ["pb_2000rnd0100.dat"]
 
 # experimente toutes les instances :
@@ -147,62 +143,3 @@ end
 println("Nb instances : ", length(resultats), " | C+A : ", nCA, " | GRASP : ", nGRASP, " | DR : ", nDR , " | Fourmis : ", nF)
 
 println("that's all folk")
-
-#=      function main()
-        Collecting the names of instances to solve
-
-        println("\nCollecting...")
-        target = "Data"
-        fnames = getfname(target)
-
-        gl_times    = Vector{Float64}(undef, length(fnames))
-        gl_results  = Vector{Int64}(undef, length(fnames))
-        ds_times    = Vector{Float64}(undef, length(fnames))
-        ds_results  = Vector{Int64}(undef, length(fnames))
-        cpt         = 1
-     
-        for fname in fnames
-        # Loading a SPP instance
-        println("\nLoading " * fname * "..." )
-
-        C, A = loadSPP("Data/" * fname)
-
-        # Solving with glouton algorithm
-        println("\nSolving with Glouton...\n")
-            
-        Ctemp = copy(C)
-
-        gl_times[cpt] = @elapsed @time x, zBest = glouton(Ctemp,A)
-        gl_results[cpt] = zBest
-
-        println("x[i]=1 en i ∈ ", findall(x->x==1, x))
-        println("z(x) = ", zBest)
-
-        println("\nImproving the solution with a simple descent...\n")
-
-        ds_times[cpt] = @elapsed @time x, zBest = simpleDescent(C,A,x,zBest)
-        ds_results[cpt] = zBest 
-
-        println("x[i]=1 en i ∈ ", findall(x->x==1, x))
-        println("z(x) = ", zBest)
-   
-        cpt = cpt + 1    
- 
-        # Displaying the results
-        println("z = ", objective_value(spp))
-        print("x = "); println(value.(spp[:x]))
-
-            
-
-      end 
-
-      println("\n Bilan :")
-
-      dm1_latexTable(fnames, gl_times, gl_results, ds_times, ds_results) |> print
-
-
-      # =========================================================================== 
-
-      println("\nThat's all folks !")
-end
-=#

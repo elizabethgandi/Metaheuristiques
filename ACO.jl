@@ -24,6 +24,7 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
     y         = [] # La valeur de 1 fourmis en abscisse
     yMeilleur = [] # La meilleure des fourmis à 1 itération en abscisse
     xMeilleur = [] # L'itération correspondant à la meilleur des solutions trouvées
+    zBest = []
 
     #--------------------------------------------------------------------------
     # Initialisation du vecteur phéromone -------------------------------------
@@ -60,6 +61,7 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
             # Insertion des valeurs de z et i pour l'affichage de plot --------
             push!(y,z)
             push!(x,i)
+            push!(zBest,z)
 
         end
 
@@ -103,15 +105,15 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
     #--------------------------------------------------------------------------
     # Affichage plot avec des points ------------------------------------------
 
-    #scatter(x,y, s=2, c="black")
-    #plt.plot(xMeilleur,yMeilleur, c="red")
-    #plt.show()
+    scatter(x,y, s=2, c="black")
+    plt.plot(xMeilleur,yMeilleur, c="red")
+    plt.show()
 
     #--------------------------------------------------------------------------
     # Affichage plot avec des lignes ------------------------------------------
 
-    plot(x,y, c="black", linewidth=0.5)
-    plot(xMeilleur,yMeilleur, c="red", linewidth=1)
+    #plot(x,y, c="black", linewidth=0.5)
+    #plot(xMeilleur,yMeilleur, c="red", linewidth=1)
 
     return cheminFourmis[idbestSol], meilleur
 end
