@@ -9,10 +9,11 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
 
     idbestSol::Int64   = 0    # Indice de la meilleur solution trouvée par une fourmis à une itération i
     lambda::Float64    = 0.1  # Coefficient d' évaporation des fourmis initié à 10%
-    beta::Float64      = 0.5  # Coefficient de dépots des fourmis sur le vecteur phéromone
+    beta::Float64      = 0.2  # Coefficient de dépots des fourmis sur le vecteur phéromone
     meilleur::Float64  = 0    # Meilleur solution z pour l'itération i
     z::Int64           = 0    # Valeur de la fonction objective
     lastRestart::Int64 = 0    # Valeur pour le coup de pied
+    bestPos            = 0    # Position du 1 qui est associé à la meilleure solution
 
     verbose::Bool      = false
 
@@ -38,37 +39,27 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
 
         idbestSol = 0
 
-        #z = 0
-
-        print("\niter $i -> z = $z \n")
-
-        
-        #@show vecteurPheromones
+        print("x")
 
         #----------------------------------------------------------------------
         # Boucle correspondant au lancement de chacunes des fourmis -----------
 
         for j in 1:nbFourmis
 
-            print("\nfourmis $j\n")
-
             # Construction du chemin emprunté par les fourmis
-            cheminFourmis[j], z  = fourmisConstruction(C, A, vecteurSol, vecteurPheromones)
-
-            #@show cheminFourmis
+            cheminFourmis[j], z, bestCandidate  = fourmisConstruction(C, A, vecteurSol, vecteurPheromones)
 
             # Stockage de la valeur de la fonction objective z dans le vecteur de solutions des fourmis
             vecteurSolFourmis[j] = z 
-            @show z
+
+            if (z > argmax(vecteurSolFourmis))
+                bestPos = bestCandidate
+            end
 
             #------------------------------------------------------------------
             # Insertion des valeurs de z et i pour l'affichage de plot --------
             push!(y,z)
             push!(x,i)
-
-            #print("\n")
-            #print("\n")
-            #print("\n")
 
         end
 
@@ -76,11 +67,14 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
         # Identification de la meilleur solution trouvée parmis toutes les fourmis
         idbestSol = argmax(vecteurSolFourmis) 
 
+        #--------------------------------------------------------------------------
+        # Activation de notre recherche locale sur le meilleur des résultats trouvés
+
         cheminFourmis[idbestSol], inutile = simpleDescent(C,A,cheminFourmis[idbestSol], Int(meilleur))
 
         #----------------------------------------------------------------------
         # Gestion du vecteur de phéromones ------------------------------------
-        vecteurPheromones = gestionEtCoupDePied(vecteurPheromones, cheminFourmis, idbestSol, i, nbIterationsACO, lastRestart, lambda, beta, meilleur, z)
+        vecteurPheromones = gestionEtCoupDePied(vecteurPheromones, cheminFourmis, idbestSol, i, nbIterationsACO, lastRestart, lambda, beta, meilleur, z, bestPos)
        
         #----------------------------------------------------------------------
         # Identification du meilleur z trouvé depuis le lancement du programme
@@ -107,23 +101,23 @@ function ACO(C, A, nbIterationsACO, nbFourmis)
     end
 
     #--------------------------------------------------------------------------
-    # Affichage plot ----------------------------------------------------------
+    # Affichage plot avec des points ------------------------------------------
 
-    scatter(x,y, s=2, c="black")
-    plt.plot(xMeilleur,yMeilleur, c="red")
-    plt.show()
+    #scatter(x,y, s=2, c="black")
+    #plt.plot(xMeilleur,yMeilleur, c="red")
+    #plt.show()
 
     #--------------------------------------------------------------------------
-    # Activation de notre recherche locale sur le meilleur des résultats trouvés
+    # Affichage plot avec des lignes ------------------------------------------
 
-    #cheminFourmis[idbestSol], inutile = gloutonAmelioration(C, A, cheminFourmis[idbestSol], meilleur)
-    #cheminFourmis[idbestSol], inutile = simpleDescent(C,A,cheminFourmis[idbestSol], Int(meilleur))
+    plot(x,y, c="black", linewidth=0.5)
+    plot(xMeilleur,yMeilleur, c="red", linewidth=1)
 
     return cheminFourmis[idbestSol], meilleur
 end
 
 
-function gestionEtCoupDePied(vecteurPheromones, cheminFourmis, idbestSol, iter, iterMax, lastRestart, lambda, beta, meilleur, zFourmis)
+function gestionEtCoupDePied(vecteurPheromones, cheminFourmis, idbestSol, iter, iterMax, lastRestart, lambda, beta, meilleur, zFourmis, bestPos)
 
     #--------------------------------------------------------------------------
     # Evaporation -------------------------------------------------------------
@@ -142,9 +136,13 @@ function gestionEtCoupDePied(vecteurPheromones, cheminFourmis, idbestSol, iter, 
     end
 
     #--------------------------------------------------------------------------
+    # Permet d'accentuer le dépôt de phéromones sur la meilleure solution trouvée
+    vecteurPheromones[bestPos] = min(1,vecteurPheromones[bestPos]+ 0.3)
+
+    #--------------------------------------------------------------------------
     # Coup de pied si stagnation ----------------------------------------------
 
-    if (meilleur == zFourmis) && ((length((findall(isequal(0.0), vecteurPheromones)))>0) == true) && ((mod(iter-lastRestart, 10))==0)
+   if (meilleur == zFourmis) && ((length((findall(isequal(0.0), vecteurPheromones)))>0) == true) && ((mod(iter-lastRestart, 5))==0)
         println(" COUP DE PIED!!!")
 
         #----------------------------------------------------------------------
@@ -187,14 +185,10 @@ function positionRoulette(vecteurPheromones)
     vTiree::Float64         = cumule[end]*rand()
     i::Int64                = 1
 
-    #@show cumule
-    #@show vTiree
-
     while (cumule[i] < vTiree)
         i = i+1
     end
 
-    #@show i
     return i
 end
 
@@ -214,8 +208,8 @@ function fourmisConstruction(C_entree::Vector{Int64}, A_entree::Matrix{Int64}, v
     sol::Vector{Int64}   = zeros(Int64,n)  # Vecteur de base de la solution
     z::Int64             = 0               # z la valeur de la fonction objective
 
-    bestCandidate::Int64 = 0
-    iteration::Int64     = 0
+    bestCandidate::Int64 = 0               # Indice du candidat choisit
+    iteration::Int64     = 1
 
     # -------------------------------------------------------------------------
     # ACO ---------------------------------------------------------------------
@@ -230,7 +224,7 @@ function fourmisConstruction(C_entree::Vector{Int64}, A_entree::Matrix{Int64}, v
     # Elimine de l'instance toutes les variables concernees par aucune contrainte
     variablesConcernees = findall(isequal(0), vec(sum(A, dims=1)))
     for j in variablesConcernees
-        sol[j] = 1 # maj solution (partielle) en fixant a 1 la variable non contrainte
+        sol[j] = 1   # maj solution (partielle) en fixant a 1 la variable non contrainte
         z = z + C[j] # maj valeur de la solution (partielle)
     end
 
@@ -243,27 +237,23 @@ function fourmisConstruction(C_entree::Vector{Int64}, A_entree::Matrix{Int64}, v
     candidates = copy(vecteurPheromones)
 
     while (size(A,1) != 0) && (size(C,1) != 0) 
+
         iteration = iteration + 1
 
         # 3) CHOIX DU CANDIDAT A AJOUTER A LA SOLUTION COURANTE ---------------
 
         # Sélection de l'indice du candidat, soit à une certaine position "postion" donnée
         # pour la première itération ou dans la roulette sinon
-        if (iteration == 1)
+        if (iteration == 2)
             bestCandidate = position
         else
-            #bestCandidate = argmax(candidates)
             bestCandidate = positionRoulette(candidates)
         end
-        #bestCandidate = positionRoulette(candidates)
-        #@show bestCandidate
 
         # Mise à jour de la solution avec le candidat selectionne
         sol[index[bestCandidate]] = 1
         # Mise à jour de la valeur de la fonction objective avec le candidat selectionne
         z = z + C[bestCandidate]
-        #@show C[bestCandidate]
-        #@show z
         # 4) REDUCTION DU PROBLEME SUITE AU CANDIDAT SELECTIONNE --------------
 
         # Identification des contraintes a supprimer du fait de la variable selectionnee
@@ -294,10 +284,8 @@ function fourmisConstruction(C_entree::Vector{Int64}, A_entree::Matrix{Int64}, v
             println("U      : ", candidates)
             println("-------- ")
         end
-
-        #println("-------- ")
      
     end
     
-    return sol, z
+    return sol, z, bestCandidate
 end
